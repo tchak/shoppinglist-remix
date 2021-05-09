@@ -1,0 +1,73 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id String @id @default(uuid()) @db.Uuid
+
+  email    String @unique
+  password String
+
+  createAt  DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  lists      UserList[]
+  ownedLists List[]
+
+  @@map("users")
+}
+
+model List {
+  id String @id @default(uuid()) @db.Uuid
+
+  title String
+  items Item[]
+
+  createAt  DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  users  UserList[]
+  userId String     @map("user_id") @db.Uuid
+  user   User       @relation(fields: userId, references: id)
+
+  @@index([userId])
+  @@map("lists")
+}
+
+model Item {
+  id String @id @default(uuid()) @db.Uuid
+
+  title   String
+  checked Boolean @default(false)
+  note    String?
+
+  createAt  DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  listId String @map("list_id") @db.Uuid
+  list   List   @relation(fields: listId, references: id)
+
+  @@index([listId])
+  @@map("items")
+}
+
+model UserList {
+  createAt  DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  userId String @map("user_id") @db.Uuid
+  user   User   @relation(fields: userId, references: id)
+  listId String @map("list_id") @db.Uuid
+  list   List   @relation(fields: listId, references: id)
+
+  @@id([userId, listId])
+  @@map("user_lists")
+}
