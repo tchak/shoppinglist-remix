@@ -107,3 +107,6 @@ dist
 /public/build
 /build
 /app/styles
+
+# Clever cloud
+/.clever.json
