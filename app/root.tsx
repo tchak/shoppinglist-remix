@@ -1,4 +1,10 @@
-import type { LinksFunction, MetaFunction } from 'remix';
+import type { ReactNode } from 'react';
+import {
+  LinksFunction,
+  LoaderFunction,
+  MetaFunction,
+  useRouteData,
+} from 'remix';
 import { Meta, Links, Scripts, LiveReload, useMatches } from 'remix';
 import { Outlet } from 'react-router-dom';
 
@@ -37,7 +43,11 @@ export const meta: MetaFunction = () => {
   };
 };
 
-function Document({ children }: { children: React.ReactNode }) {
+export const loader: LoaderFunction = () => {
+  return { domain: process.env['SESSION_DOMAIN'] };
+};
+
+function Document({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <head>
@@ -57,6 +67,7 @@ function Document({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  const { domain } = useRouteData<{ domain: string }>();
   const matches = useMatches();
   const authenticated = matches.every(
     ({ pathname }) => pathname != '/signin' && pathname != '/signup'
@@ -70,6 +81,7 @@ export default function App() {
       ) : (
         <Outlet />
       )}
+      {process.env.NODE_ENV === 'production' && <Plausible domain={domain} />}
     </Document>
   );
 }
@@ -84,5 +96,16 @@ export function ErrorBoundary({ error }: { error: Error }) {
         uncaught errors.
       </p>
     </Document>
+  );
+}
+
+function Plausible({ domain }: { domain?: string }) {
+  return (
+    <script
+      async
+      defer
+      data-domain={domain}
+      src="https://plausible.io/js/plausible.js"
+    />
   );
 }
