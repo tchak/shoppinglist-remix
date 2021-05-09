@@ -69,17 +69,15 @@ function Document({ children }: { children: ReactNode }) {
 export default function App() {
   const { domain } = useRouteData<{ domain: string }>();
   const matches = useMatches();
-  const authenticated = matches.every(
-    ({ pathname }) => pathname != '/signin' && pathname != '/signup'
-  );
+  const noLayout = matches.some(({ handle }) => handle?.layout == false);
   return (
     <Document>
-      {authenticated ? (
+      {noLayout ? (
+        <Outlet />
+      ) : (
         <AuthenticatedLayout>
           <Outlet />
         </AuthenticatedLayout>
-      ) : (
-        <Outlet />
       )}
       {process.env.NODE_ENV === 'production' && <Plausible domain={domain} />}
     </Document>
