@@ -7,10 +7,12 @@
     "build": "yarn build:css && remix build",
     "dev": "remix run",
     "start": "remix-serve build",
+    "migrate": "yarn prisma migrate deploy",
     "ts-node": "ts-node --compiler-options '{\"module\":\"CommonJS\"}'",
     "watch:css": "postcss styles --base styles --dir app/styles -w",
     "build:css": "postcss styles --base styles --dir app/styles --env production",
-    "tsc": "tsc -b app/tsconfig.json"
+    "tsc": "tsc -b app/tsconfig.json",
+    "postinstall": "if [ \"$NODE_ENV\" == \"production\" ]; then yarn build && yarn migrate; fi"
   },
   "dependencies": {
     "@headlessui/react": "^1.0.0",
