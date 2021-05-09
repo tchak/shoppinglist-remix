@@ -17,7 +17,7 @@ export const {
     ...(process.env.NODE_ENV === 'production'
       ? {
           secure: true,
-          domain: String(process.env['RAILWAY_STATIC_URL']),
+          domain: String(process.env['SESSION_DOMAIN']),
         }
       : undefined),
   },
