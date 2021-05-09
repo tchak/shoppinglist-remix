@@ -1,4 +1,4 @@
-import type { LinksFunction } from 'remix';
+import type { LinksFunction, MetaFunction } from 'remix';
 import { Meta, Links, Scripts, LiveReload, useMatches } from 'remix';
 import { Outlet } from 'react-router-dom';
 
@@ -11,7 +11,30 @@ export const links: LinksFunction = () => {
     { rel: 'stylesheet', href: 'https://unpkg.com/@reach/tooltip/styles.css' },
     { rel: 'stylesheet', href: 'https://unpkg.com/@reach/combobox/styles.css' },
     { rel: 'stylesheet', href: stylesUrl },
+    {
+      rel: 'apple-touch-icon',
+      sizes: '180x180',
+      href: '/apple-touch-icon.png',
+    },
+    {
+      rel: 'icon',
+      type: 'image/png',
+      sizes: '32x32',
+      href: '/favicon-32x32.png',
+    },
+    {
+      rel: 'icon',
+      type: 'image/png',
+      sizes: '16x16',
+      href: '/favicon-16x16.png',
+    },
   ];
+};
+
+export const meta: MetaFunction = () => {
+  return {
+    viewport: 'width=device-width, initial-scale=1.0',
+  };
 };
 
 function Document({ children }: { children: React.ReactNode }) {
@@ -23,7 +46,7 @@ function Document({ children }: { children: React.ReactNode }) {
         <Meta />
         <Links />
       </head>
-      <body>
+      <body className="bg-gray-200">
         {children}
 
         <Scripts />
