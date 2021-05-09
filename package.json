@@ -9,7 +9,8 @@
     "start": "remix-serve build",
     "ts-node": "ts-node --compiler-options '{\"module\":\"CommonJS\"}'",
     "watch:css": "postcss styles --base styles --dir app/styles -w",
-    "build:css": "postcss styles --base styles --dir app/styles --env production"
+    "build:css": "postcss styles --base styles --dir app/styles --env production",
+    "tsc": "tsc -b app/tsconfig.json"
   },
   "dependencies": {
     "@headlessui/react": "^1.0.0",
