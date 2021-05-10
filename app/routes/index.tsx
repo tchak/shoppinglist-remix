@@ -2,11 +2,17 @@ import type { MetaFunction, LoaderFunction, ActionFunction } from 'remix';
 import { useRouteData, redirect, Link, useSubmit } from 'remix';
 import { TrashIcon, ShareIcon } from '@heroicons/react/outline';
 import { Tooltip } from '@reach/tooltip';
+import * as Yup from 'yup';
 
 import { withSession, requireUser } from '../sessions';
+import { withBody } from '../withBody';
 import { prisma, List } from '../db';
 
 type RouteData = (List & { isShared: boolean })[];
+
+const createListSchema = Yup.object().shape({
+  title: Yup.string().required(),
+});
 
 function useListsData(): [RouteData, { deleteList: (id: string) => void }] {
   const data = useRouteData<RouteData>();
@@ -42,20 +48,26 @@ export const loader: LoaderFunction = ({ request }) =>
 
 export const action: ActionFunction = ({ request }) =>
   withSession(request, (session) =>
-    requireUser(session, async (user) => {
-      const body = new URLSearchParams(await request.text());
-      const { title } = Object.fromEntries(body);
+    requireUser(session, (user) =>
+      withBody(request, (router) =>
+        router
+          .post(createListSchema, async ({ title }) => {
+            await prisma.list.create({
+              data: {
+                userId: user.id,
+                users: { create: { userId: user.id } },
+                title,
+              },
+            });
 
-      await prisma.list.create({
-        data: {
-          userId: user.id,
-          users: { create: { userId: user.id } },
-          title,
-        },
-      });
-
-      return redirect('/');
-    })
+            return redirect('/');
+          })
+          .error((error) => {
+            session.flash('error', error);
+            return redirect('/');
+          })
+      )
+    )
   );
 
 export default function Index() {

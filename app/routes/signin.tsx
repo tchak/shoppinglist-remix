@@ -12,21 +12,21 @@ import {
   usePendingFormSubmit,
 } from 'remix';
 import { LockClosedIcon, XCircleIcon } from '@heroicons/react/solid';
+import * as Yup from 'yup';
 
 import { verify } from '../argon2.server';
-import { validateEmail, validatePassword } from '../validators.server';
 import { withSession, requireUser } from '../sessions';
 import { prisma } from '../db';
+import { withBody } from '../withBody';
 
 type RouteData = {
-  error?: {
-    message: string;
-    data: {
-      email: string;
-      password: string;
-    };
-  };
+  error?: Yup.ValidationError;
 };
+
+const signInSchema = Yup.object().shape({
+  email: Yup.string().email().required(),
+  password: Yup.string().min(6).required(),
+});
 
 export const handle: RouteHandle = { layout: false };
 
@@ -46,38 +46,35 @@ export const loader: LoaderFunction = ({ request }) =>
   );
 
 export const action: ActionFunction = ({ request }) =>
-  withSession(request, async (session) =>
+  withSession(request, (session) =>
     requireUser(
       session,
       () => redirect('/'),
-      async () => {
-        const body = new URLSearchParams(await request.text());
-        const { email, password } = Object.fromEntries(body);
+      () =>
+        withBody(request, (router) =>
+          router
+            .post(signInSchema, async ({ email, password }) => {
+              const user = await prisma.user.findUnique({
+                where: { email },
+              });
 
-        if (!validateEmail(email) || !validatePassword(password)) {
-          session.unset('user');
-          session.flash('error', {
-            message: 'Wrong email or password',
-            data: { email, password },
-          });
-          return redirect('/signin');
-        }
+              if (user && (await verify(user.password, password))) {
+                session.set('user', user.id);
+              } else {
+                throw new Yup.ValidationError('Wrong email or password', {
+                  email,
+                  password,
+                });
+              }
 
-        const user = await prisma.user.findUnique({
-          where: { email },
-        });
-        if (user && (await verify(user.password, password))) {
-          session.set('user', user.id);
-          return redirect('/');
-        } else {
-          session.unset('user');
-          session.flash('error', {
-            message: 'Wrong email or password',
-            data: { email, password },
-          });
-        }
-        return redirect('/signin');
-      }
+              return redirect('/');
+            })
+            .error((error) => {
+              session.flash('error', error);
+              session.unset('user');
+              return redirect('/signin');
+            })
+        )
     )
   );
 
@@ -119,7 +116,7 @@ export default function SignIn() {
                   required
                   className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
                   placeholder="Email address"
-                  defaultValue={error?.data.email}
+                  defaultValue={error?.value.email}
                 />
               </div>
               <div>
@@ -134,7 +131,7 @@ export default function SignIn() {
                   required
                   className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
                   placeholder="Password"
-                  defaultValue={error?.data.password}
+                  defaultValue={error?.value.password}
                 />
               </div>
             </div>

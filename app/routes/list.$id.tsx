@@ -6,8 +6,10 @@ import type {
   Response,
 } from 'remix';
 import { useRouteData, redirect, useSubmit } from 'remix';
+import * as Yup from 'yup';
 
 import { withSession, requireUser } from '../sessions';
+import { withBody } from '../withBody';
 import { prisma, List, Item } from '../db';
 
 import { ListTitle } from '../components/ListTitle';
@@ -17,6 +19,14 @@ import { ItemDetailDialog } from '../components/ItemDetailDialog';
 import { useRefetchOnWindowFocus } from './_refetch';
 
 type RouteData = List & { items: Item[] };
+
+const createItemSchema = Yup.object().shape({
+  title: Yup.string().required(),
+});
+
+const updateListSchema = Yup.object().shape({
+  title: Yup.string().required(),
+});
 
 function useListMutations() {
   const submit = useSubmit();
@@ -31,7 +41,7 @@ function useListMutations() {
     submit({ title }, { replace: true, method: 'post' });
   const toggleItem = (id: string, checked: boolean) =>
     submit(
-      { checked: checked == true ? 'on' : 'off' },
+      { checked: checked == true ? 'true' : 'false' },
       { action: `/item/${id}`, replace: true, method: 'put' }
     );
   const deleteItem = (id: string) =>
@@ -81,40 +91,49 @@ export const loader: LoaderFunction = ({ request, params }) =>
 
 export const action: ActionFunction = async ({ request, params }) =>
   withSession(request, (session) =>
-    requireUser(session, async (user) => {
-      const method = request.method.toLowerCase();
-      const body = new URLSearchParams(await request.text());
-      const { title } = Object.fromEntries(body);
-
-      if (method == 'post') {
-        const list = await prisma.list.findFirst({
-          where: { id: params.id, users: { some: { user } } },
-          select: { id: true },
-        });
-        if (!list) {
-          return redirect('/');
-        }
-        await prisma.item.create({ data: { list: { connect: list }, title } });
-      } else if (method == 'put') {
-        await prisma.list.updateMany({
-          where: { id: params.id, users: { some: { user } } },
-          data: { title },
-        });
-      } else if (method == 'delete') {
-        await prisma.$transaction([
-          prisma.userList.deleteMany({
-            where: { listId: params.id },
-          }),
-          prisma.item.deleteMany({ where: { listId: params.id } }),
-          prisma.list.deleteMany({
-            where: { id: params.id, user },
-          }),
-        ]);
-        return redirect('/');
-      }
-
-      return redirect(`/list/${params.id}`);
-    })
+    requireUser(session, (user) =>
+      withBody(request, (router) =>
+        router
+          .post(createItemSchema, async ({ title }) => {
+            const list = await prisma.list.findFirst({
+              where: { id: params.id, users: { some: { user } } },
+              select: { id: true },
+            });
+            if (!list) {
+              return redirect('/');
+            }
+            await prisma.item.create({
+              data: { list: { connect: list }, title },
+            });
+            return redirect(`/list/${params.id}`);
+          })
+          .put(updateListSchema, async ({ title }) => {
+            await prisma.list.updateMany({
+              where: { id: params.id, users: { some: { user } } },
+              data: { title },
+            });
+            return redirect(`/list/${params.id}`);
+          })
+          .delete(async () => {
+            const list = await prisma.list.findFirst({
+              where: { id: params.id, user },
+              select: { id: true },
+            });
+            if (list) {
+              await prisma.$transaction([
+                prisma.userList.deleteMany({ where: { listId: params.id } }),
+                prisma.item.deleteMany({ where: { listId: params.id } }),
+                prisma.list.deleteMany({ where: { id: params.id, user } }),
+              ]);
+            }
+            return redirect('/');
+          })
+          .error((error) => {
+            session.flash('error', error);
+            return redirect(`/list/${params.id}`);
+          })
+      )
+    )
   );
 
 export default function ListPage() {
