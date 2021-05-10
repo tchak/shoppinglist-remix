@@ -5,11 +5,11 @@ import {
   MetaFunction,
   useRouteData,
 } from 'remix';
-import { Meta, Links, Scripts, LiveReload, useMatches } from 'remix';
-import { Outlet } from 'react-router-dom';
+import { Meta, Links, Scripts, LiveReload, useMatches, json } from 'remix';
 
 import stylesUrl from './styles/index.css';
-import { AuthenticatedLayout } from './components/AuthenticatedLayout';
+import { ApplicationLayout } from './components/ApplicationLayout';
+import { AuthenticationLayout } from './components/AuthenticationLayout';
 
 export const links: LinksFunction = () => {
   return [
@@ -44,10 +44,24 @@ export const meta: MetaFunction = () => {
 };
 
 export const loader: LoaderFunction = () => {
-  return { domain: process.env['SESSION_DOMAIN'] };
+  return json(
+    {
+      ENV: {
+        SESSION_DOMAIN: process.env['SESSION_DOMAIN'],
+        COMMIT_ID: process.env['COMMIT_ID'],
+      },
+    },
+    {
+      headers: {
+        'cache-control': 'max-age=3600',
+      },
+    }
+  );
 };
 
 function Document({ children }: { children: ReactNode }) {
+  const { ENV } = useRouteData<{ ENV: Record<string, string> }>();
+
   return (
     <html lang="en">
       <head>
@@ -60,26 +74,31 @@ function Document({ children }: { children: ReactNode }) {
         {children}
 
         <Scripts />
-        {process.env.NODE_ENV === 'development' && <LiveReload />}
+        {process.env.NODE_ENV == 'development' && <LiveReload />}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.ENV = ${JSON.stringify(ENV)};`,
+          }}
+        />
+        {process.env.NODE_ENV == 'production' && (
+          <script
+            async
+            defer
+            data-domain={ENV['SESSION_DOMAIN']}
+            src="https://plausible.io/js/plausible.js"
+          />
+        )}
       </body>
     </html>
   );
 }
 
 export default function App() {
-  const { domain } = useRouteData<{ domain: string }>();
-  const matches = useMatches();
-  const noLayout = matches.some(({ handle }) => handle?.layout == false);
+  const noLayout = useMatches().some(({ handle }) => handle?.layout == false);
+
   return (
     <Document>
-      {noLayout ? (
-        <Outlet />
-      ) : (
-        <AuthenticatedLayout>
-          <Outlet />
-        </AuthenticatedLayout>
-      )}
-      {process.env.NODE_ENV === 'production' && <Plausible domain={domain} />}
+      {noLayout ? <AuthenticationLayout /> : <ApplicationLayout />}
     </Document>
   );
 }
@@ -94,16 +113,5 @@ export function ErrorBoundary({ error }: { error: Error }) {
         uncaught errors.
       </p>
     </Document>
-  );
-}
-
-function Plausible({ domain }: { domain?: string }) {
-  return (
-    <script
-      async
-      defer
-      data-domain={domain}
-      src="https://plausible.io/js/plausible.js"
-    />
   );
 }
