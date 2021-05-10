@@ -27,7 +27,6 @@ export const action: ActionFunction = async ({ request, params }) =>
             if (!item) {
               return redirect('/');
             }
-            console.log('checked', checked);
             await prisma.item.updateMany({
               where: { listId: item.listId, id: params.id },
               data: { title, checked, note },
