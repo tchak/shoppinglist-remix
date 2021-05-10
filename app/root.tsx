@@ -6,6 +6,7 @@ import {
   useRouteData,
 } from 'remix';
 import { Meta, Links, Scripts, LiveReload, useMatches, json } from 'remix';
+import { withProfiler } from '@sentry/react';
 
 import stylesUrl from './styles/index.css';
 import { ApplicationLayout } from './components/ApplicationLayout';
@@ -49,6 +50,7 @@ export const loader: LoaderFunction = () => {
       ENV: {
         SESSION_DOMAIN: process.env['SESSION_DOMAIN'],
         COMMIT_ID: process.env['COMMIT_ID'],
+        SENTRY_DSN: process.env['SENTRY_DSN'],
       },
     },
     {
@@ -93,7 +95,7 @@ function Document({ children }: { children: ReactNode }) {
   );
 }
 
-export default function App() {
+export default withProfiler(function App() {
   const noLayout = useMatches().some(({ handle }) => handle?.layout == false);
 
   return (
@@ -101,7 +103,7 @@ export default function App() {
       {noLayout ? <AuthenticationLayout /> : <ApplicationLayout />}
     </Document>
   );
-}
+});
 
 export function ErrorBoundary({ error }: { error: Error }) {
   return (
