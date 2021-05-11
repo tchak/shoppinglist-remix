@@ -47,13 +47,13 @@ export const meta: MetaFunction = () => {
     'og:type': 'website',
     'og:title': 'Shoppinglist',
     'og:description': 'A simple shoppinglist app',
-    'og:image': '',
-    'twitter:card': '',
+    'og:image': '/og-image.png',
+    'twitter:card': '/og-image.png',
     'twitter:domain': 'shoppinglist.tchak.dev',
     'twitter:url': 'https://shoppinglist.tchak.dev/',
-    'twitter:title': 'Sign In',
+    'twitter:title': 'Shoppinglist',
     'twitter:description': 'A simple shoppinglist app',
-    'twitter:image': '',
+    'twitter:image': '/og-image.png',
   };
 };
 
