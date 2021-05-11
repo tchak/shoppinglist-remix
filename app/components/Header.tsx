@@ -23,10 +23,11 @@ export function Header() {
 
 function HeaderAction() {
   const isLanding = useMatch('/');
+  const isLists = useMatch('/lists');
 
-  if (isLanding) {
+  if (isLists) {
     return (
-      <Form method="post" action="/" replace>
+      <Form method="post" action="/lists" replace>
         <input type="hidden" name="title" value="New Shoppinglist" />
         <button
           type="submit"
@@ -36,11 +37,12 @@ function HeaderAction() {
         </button>
       </Form>
     );
-  } else {
+  } else if (!isLanding) {
     return (
       <ClientOnly>
         <ShareButton />
       </ClientOnly>
     );
   }
+  return null;
 }

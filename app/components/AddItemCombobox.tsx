@@ -41,8 +41,11 @@ export function AddItemCombobox({
           setTerm('');
         }}
       >
-        <PlusIcon className="h-10 w-10 text-gray-400" />
+        <label htmlFor="item-title">
+          <PlusIcon className="h-10 w-10 text-gray-400" />
+        </label>
         <ComboboxInput
+          id="item-title"
           type="text"
           placeholder="Add Item"
           className="shadow-sm focus:ring-green-500 focus:border-green-500 flex-grow sm:text-sm border-gray-300 rounded-md"
