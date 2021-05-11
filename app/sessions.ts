@@ -1,27 +1,26 @@
 import type { Request, Session, LoaderFunction } from 'remix';
 import { Response, createCookieSessionStorage, json, redirect } from 'remix';
+import { DateTime } from 'luxon';
 
 import { prisma, User } from './db';
 
-export const {
-  getSession,
-  commitSession,
-  destroySession,
-} = createCookieSessionStorage({
-  cookie: {
-    name: '__session',
-    secrets: [String(process.env['SESSION_SECRET'])],
-    path: '/',
-    httpOnly: true,
-    sameSite: 'lax',
-    ...(process.env.NODE_ENV === 'production'
-      ? {
-          secure: true,
-          domain: String(process.env['SESSION_DOMAIN']),
-        }
-      : undefined),
-  },
-});
+export const { getSession, commitSession, destroySession } =
+  createCookieSessionStorage({
+    cookie: {
+      name: '__session',
+      secrets: [String(process.env['SESSION_SECRET'])],
+      path: '/',
+      httpOnly: true,
+      sameSite: 'lax',
+      expires: DateTime.local().plus({ year: 1 }).toJSDate(),
+      ...(process.env.NODE_ENV === 'production'
+        ? {
+            secure: true,
+            domain: String(process.env['SESSION_DOMAIN']),
+          }
+        : undefined),
+    },
+  });
 
 type NextFunction<T> = (context: T) => ReturnType<LoaderFunction>;
 
