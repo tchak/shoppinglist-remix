@@ -40,7 +40,20 @@ export const links: LinksFunction = () => {
 
 export const meta: MetaFunction = () => {
   return {
+    title: 'Shoppinglist',
     viewport: 'width=device-width, initial-scale=1.0',
+    description: 'A simple shoppinglist app',
+    'og:url': 'https://shoppinglist.tchak.dev/',
+    'og:type': 'website',
+    'og:title': 'Shoppinglist',
+    'og:description': 'A simple shoppinglist app',
+    'og:image': '',
+    'twitter:card': '',
+    'twitter:domain': 'shoppinglist.tchak.dev',
+    'twitter:url': 'https://shoppinglist.tchak.dev/',
+    'twitter:title': 'Sign In',
+    'twitter:description': 'A simple shoppinglist app',
+    'twitter:image': '',
   };
 };
 
