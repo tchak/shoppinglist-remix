@@ -12,6 +12,7 @@ import { IntlProvider } from 'react-intl';
 import stylesUrl from './styles/index.css';
 import { ApplicationLayout } from './components/ApplicationLayout';
 import { AuthenticationLayout } from './components/AuthenticationLayout';
+import { withLocale } from './sessions';
 
 type RouteData = {
   ENV: Record<string, string>;
@@ -63,21 +64,23 @@ export const meta: MetaFunction = () => {
   };
 };
 
-export const loader: LoaderFunction = () =>
-  json(
-    {
-      locale: 'en',
-      ENV: {
-        SESSION_DOMAIN: process.env['SESSION_DOMAIN'],
-        COMMIT_ID: process.env['COMMIT_ID'],
-        SENTRY_DSN: process.env['SENTRY_DSN'],
+export const loader: LoaderFunction = ({ request }) =>
+  withLocale(request, (locale) =>
+    json(
+      {
+        locale,
+        ENV: {
+          SESSION_DOMAIN: process.env['SESSION_DOMAIN'],
+          COMMIT_ID: process.env['COMMIT_ID'],
+          SENTRY_DSN: process.env['SENTRY_DSN'],
+        },
       },
-    },
-    {
-      headers: {
-        'cache-control': 'max-age=3600',
-      },
-    }
+      {
+        headers: {
+          'cache-control': 'max-age=3600',
+        },
+      }
+    )
   );
 
 function Document({ children }: { children: ReactNode }) {
