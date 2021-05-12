@@ -7,10 +7,16 @@ import {
 } from 'remix';
 import { Meta, Links, Scripts, LiveReload, useMatches, json } from 'remix';
 import { withProfiler } from '@sentry/react';
+import { IntlProvider } from 'react-intl';
 
 import stylesUrl from './styles/index.css';
 import { ApplicationLayout } from './components/ApplicationLayout';
 import { AuthenticationLayout } from './components/AuthenticationLayout';
+
+type RouteData = {
+  ENV: Record<string, string>;
+  locale: string;
+};
 
 export const links: LinksFunction = () => {
   return [
@@ -57,9 +63,10 @@ export const meta: MetaFunction = () => {
   };
 };
 
-export const loader: LoaderFunction = () => {
-  return json(
+export const loader: LoaderFunction = () =>
+  json(
     {
+      locale: 'en',
       ENV: {
         SESSION_DOMAIN: process.env['SESSION_DOMAIN'],
         COMMIT_ID: process.env['COMMIT_ID'],
@@ -72,13 +79,12 @@ export const loader: LoaderFunction = () => {
       },
     }
   );
-};
 
 function Document({ children }: { children: ReactNode }) {
-  const { ENV } = useRouteData<{ ENV: Record<string, string> }>();
+  const { ENV, locale } = useRouteData<RouteData>();
 
   return (
-    <html lang="en">
+    <html lang={locale}>
       <head>
         <meta charSet="utf-8" />
         <link rel="icon" href="/favicon.png" type="image/png" />
@@ -109,11 +115,14 @@ function Document({ children }: { children: ReactNode }) {
 }
 
 export default withProfiler(function App() {
+  const { locale } = useRouteData<RouteData>();
   const noLayout = useMatches().some(({ handle }) => handle?.layout == false);
 
   return (
     <Document>
-      {noLayout ? <AuthenticationLayout /> : <ApplicationLayout />}
+      <IntlProvider locale={locale}>
+        {noLayout ? <AuthenticationLayout /> : <ApplicationLayout />}
+      </IntlProvider>
     </Document>
   );
 });
