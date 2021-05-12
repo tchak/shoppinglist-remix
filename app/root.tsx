@@ -77,7 +77,7 @@ export const loader: LoaderFunction = ({ request }) =>
       },
       {
         headers: {
-          'cache-control': 'max-age=3600',
+          'cache-control': 'max-age=600',
         },
       }
     )
