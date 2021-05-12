@@ -378,10 +378,10 @@
     "@react-spring/shared" "~9.1.2"
     "@react-spring/types" "~9.1.2"
 
-"@remix-run/dev@0.17.0":
-  version "0.17.0"
-  resolved "https://npm.remix.run/download/@remix-run/dev/0.17.0/a3c69c8a10f9fef61a68cc85d8c5d9e737406278ae7d8c0351aa6cae66134887#2ee88dfb0c8544b2db9adea19304d02fe736073f"
-  integrity sha512-lqwychDITn68oLxI2SFzqlx+VmzM9h/VJB/OAya4lfDScf7JDLhzjG/mtLYeiYRfdXd+d1afMdDjOjk7wJ7CSQ==
+"@remix-run/dev@0.17.2":
+  version "0.17.2"
+  resolved "https://npm.remix.run/download/@remix-run/dev/0.17.2/d0f2422a0615bafccad88927929168114ba2a056b61f4a707e3a7b4176d6fa4a#b77132079632e68ffd7468a4744f765e10976377"
+  integrity sha512-LYmE49gmiTyIjRktpRWpWJTJtYUt2GPBPPVeCXTyKpd1j60glsp/GYqQtQFYkUxRDSI7HK2LLlr5M0dz7YZhWQ==
   dependencies:
     cacache "^15.0.5"
     chokidar "^3.5.1"
@@ -393,17 +393,17 @@
     signal-exit "^3.0.3"
     ws "^7.4.5"
 
-"@remix-run/express@0.17.0":
-  version "0.17.0"
-  resolved "https://npm.remix.run/download/@remix-run/express/0.17.0/be58f5ab0189dfbc40273f34aedd9e91bc9c939f05818bb603c6ec4f770b1a8b#0015431e506184ae315aab15a86bfb8a78b079bb"
-  integrity sha512-cK569k3J3IA0siWSdx0Wni60OwbcyMs+zCzNp2qluh4tpkK+Fbh6ttGW/IAA6UsbD+ZgQkriMfv3KqqLUNPEbw==
+"@remix-run/express@0.17.2":
+  version "0.17.2"
+  resolved "https://npm.remix.run/download/@remix-run/express/0.17.2/24f4e7fb767c0ba06ff2643bdc9711216b741334ee4009c54376d8e3d5b9be35#c157666e5c63a9639b0594363a903eb203ac86ba"
+  integrity sha512-GQJQuSBKsSdCXQBI6eeirL49/aaofm+GocaBdvi97AKVDQzAAoaFNvDerw6QdG7IOBheWaGfGDiHZQOUaicmGw==
   dependencies:
-    "@remix-run/node" "0.17.0"
+    "@remix-run/node" "0.17.2"
 
-"@remix-run/node@0.17.0":
-  version "0.17.0"
-  resolved "https://npm.remix.run/download/@remix-run/node/0.17.0/482d7fbe4fea1c1a8f09847ff16fb2573a064e4ab4da2b64f63966a2bf49e3a4#ef47447b990723a01c7e616b1c39790c6cc80c26"
-  integrity sha512-n5pHJnP9O/mE4kbBHpBr8p6asYDupv/NkFJucIpUC726S7KJHhFVqCRBPBJWIOiA3QZy0qLFB3aqHV0wGgXtQA==
+"@remix-run/node@0.17.2":
+  version "0.17.2"
+  resolved "https://npm.remix.run/download/@remix-run/node/0.17.2/92693b67dddf8126be5dbb770ef077c3fae96ddb38b2d00dff03ca64315abfe6#64d80e9ba236391eb13a36a72ba90db02ce36bd8"
+  integrity sha512-TZPFLJTIJGnd4zTA3oQAr/zg8jc82yDFBHFXI0JnS2+wfE1MB5Aw9LUa7LQvMsaxe7SFOjtdJ4T4DAKZofVjJQ==
   dependencies:
     "@types/cookie" "^0.4.0"
     "@types/node-fetch" "^2.5.7"
@@ -414,20 +414,20 @@
     node-fetch "^2.6.1"
     react-router-dom "^6.0.0-beta.0"
 
-"@remix-run/react@0.17.0":
-  version "0.17.0"
-  resolved "https://npm.remix.run/download/@remix-run/react/0.17.0/5f23fe66ad775ef22d9f77af797c43c0378c237d15e83be59ca6e8fd364746e1#e647191f371d24bf8749b392d775abba710c6565"
-  integrity sha512-EsFqWIUg4DV6DgSFBHOfPQ/LT16jFTYYF28Y9gATrTdLgCy5n9D7p2sUgh6bcJhLIpv9QMtXMxLR2NPBSxdZUA==
+"@remix-run/react@0.17.2":
+  version "0.17.2"
+  resolved "https://npm.remix.run/download/@remix-run/react/0.17.2/155735854ca1782190133584b9378ad302d63fd9d4e57ad58600d0b4c959dab4#971e6e127a7375af0893f2fae77f40742098952f"
+  integrity sha512-4KBMqNbZg/GTdx4nlsy72uS+jbkVye3z4MvrP1AGN1poI2bPG/lR1CoR4lnf2bIoQQlvFGJPqt0F8zrAv1uwNw==
   dependencies:
     history "^5.0.0"
     react-router-dom "^6.0.0-beta.0"
 
-"@remix-run/serve@0.17.0":
-  version "0.17.0"
-  resolved "https://npm.remix.run/download/@remix-run/serve/0.17.0/c314dd611889bd3cb929d17f5f6d0ddbbfd2f1fa3a9feefb2fd8b14db1371339#fb42d45cb1a782a7a7afdaa2d7bc1c2b9f2b022c"
-  integrity sha512-A/7dwjIUCOWV3EyFyKLukjlqi5RoShr+wHPLPpVIECaEokGpqxhTVTo9XByXJVr9jYYGTBpnZEE42AbqrMhY1A==
+"@remix-run/serve@0.17.2":
+  version "0.17.2"
+  resolved "https://npm.remix.run/download/@remix-run/serve/0.17.2/e3047702d73e2d840a2af361b791f2c0613a5c2b466a48d401e6d34079c044cc#2e8a3217fd6fc248f60efc574a4f3f10b71b4bda"
+  integrity sha512-V6ePDIHQg6IldJCmI2sbbJGHSgrmBPg083dNuNUcVuikkuCLNBMDjjK3aMFTdpJzmzqHHDthwvKbCEBFbcqzpg==
   dependencies:
-    "@remix-run/express" "0.17.0"
+    "@remix-run/express" "0.17.2"
     compression "^1.7.4"
     express "^4.17.1"
     morgan "^1.10.0"
@@ -1405,6 +1405,15 @@ fresh@0.5.2:
   version "0.5.2"
   resolved "https://registry.yarnpkg.com/fresh/-/fresh-0.5.2.tgz#3d8cadd90d976569fa835ab1f8e4b23a105605a7"
   integrity sha1-PYyt2Q2XZWn6g1qx+OSyOhBWBac=
+
+fs-extra@^10.0.0:
+  version "10.0.0"
+  resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-10.0.0.tgz#9ff61b655dde53fb34a82df84bb214ce802e17c1"
+  integrity sha512-C5owb14u9eJwizKGdchcDUQeFtlSHHthBk8pbX9Vc1PFZrLombudjDnNns88aYslCyF6IY5SUw3Roz6xShcEIQ==
+  dependencies:
+    graceful-fs "^4.2.0"
+    jsonfile "^6.0.1"
+    universalify "^2.0.0"
 
 fs-extra@^9.0.0, fs-extra@^9.1.0:
   version "9.1.0"
@@ -2858,10 +2867,12 @@ regenerator-runtime@^0.13.4:
   resolved "https://registry.yarnpkg.com/regenerator-runtime/-/regenerator-runtime-0.13.7.tgz#cac2dacc8a1ea675feaabaeb8ae833898ae46f55"
   integrity sha512-a54FxoJDIr27pgf7IgeQGxmqUNYrcV338lf/6gH456HZ/PhX+5BcwHXG9ajESmwe6WRO0tAzRUrRmNONWgkrew==
 
-remix@0.17.0:
-  version "0.17.0"
-  resolved "https://registry.yarnpkg.com/remix/-/remix-0.17.0.tgz#dd30877bc0c4495184e00c9b12738099d27b8c96"
-  integrity sha512-O0OO8vfHzdOcMrYxaf/Bf31dX+CXc9Bdg2SfMYaVIDBczRp2SOR5n9WXc9yrbv/CVbOfZqDzu2LmI0vp6L/StQ==
+remix@0.17.2:
+  version "0.17.2"
+  resolved "https://registry.yarnpkg.com/remix/-/remix-0.17.2.tgz#2406bdfc8dcc218d3a449ea7ae316882d9eb4751"
+  integrity sha512-rUHZ7tzpsaK4p3d7JkSCphytNM8hO4lt2noaVB3exsinMzhc/ftmGnAJbl2lHFW/XgWr+ncibF77Z5d78TiSbw==
+  dependencies:
+    fs-extra "^10.0.0"
 
 require-directory@^2.1.1:
   version "2.1.1"
