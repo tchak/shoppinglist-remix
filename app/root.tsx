@@ -78,7 +78,7 @@ export const loader: LoaderFunction = ({ request }) =>
       {
         locale,
         ENV: {
-          SESSION_DOMAIN: process.env['SESSION_DOMAIN'],
+          APP_DOMAIN: process.env['APP_DOMAIN'],
           COMMIT_ID: process.env['COMMIT_ID'],
           SENTRY_DSN: process.env['SENTRY_DSN'],
         },
@@ -116,7 +116,7 @@ function Document({ children }: { children: ReactNode }) {
           <script
             async
             defer
-            data-domain={ENV['SESSION_DOMAIN']}
+            data-domain={ENV['APP_DOMAIN']}
             src="https://plausible.io/js/plausible.js"
           />
         )}
