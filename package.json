@@ -14,7 +14,8 @@
     "watch:css": "postcss styles --base styles --dir app/styles -w",
     "build:css": "postcss styles --base styles --dir app/styles --env production",
     "tsc": "tsc -b app/tsconfig.json",
-    "postinstall": "if [ \"$NODE_ENV\" == \"production\" ]; then yarn build && yarn migrate; fi"
+    "scalingo-postbuild": "yarn build && yarn migrate",
+    "postinstall": "if [ \"$INSTANCE_TYPE\" == \"production\" ]; then yarn build && yarn migrate; fi"
   },
   "dependencies": {
     "@headlessui/react": "^1.2.0",
