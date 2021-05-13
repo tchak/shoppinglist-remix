@@ -4,7 +4,9 @@
   "description": "",
   "license": "MIT",
   "scripts": {
-    "build": "npm run build:css && npm run remix:build",
+    "lint": "eslint . --ext .ts,.tsx",
+    "tsc": "tsc -b app/tsconfig.json",
+    "build": "npm run build:css && npm run build:i18n && npm run remix:build",
     "dev": "concurrently \"npm:watch:css\" \"npm:remix:run\"",
     "remix:run": "remix run",
     "remix:build": "remix build",
@@ -13,8 +15,10 @@
     "ts-node": "ts-node --compiler-options '{\"module\":\"CommonJS\"}'",
     "watch:css": "postcss styles --base styles --dir app/styles -w",
     "build:css": "postcss styles --base styles --dir app/styles --env production",
-    "tsc": "tsc -b app/tsconfig.json",
-    "scalingo-postbuild": "npm run build && npm run migrate"
+    "scalingo-postbuild": "npm run build && npm run migrate",
+    "build:i18n": "npm run extract:i18n && npm run compile:i18n && npm run lint -- --fix",
+    "extract:i18n": "formatjs extract 'app/**/*.ts*' --out-file app/lang/en-GB.json --id-interpolation-pattern '[sha512:contenthash:base64:6]'",
+    "compile:i18n": "formatjs compile app/lang/en-GB.json --ast --out-file app/lang/compiled/en-GB.json"
   },
   "dependencies": {
     "@headlessui/react": "^1.2.0",
@@ -49,6 +53,7 @@
     "yup": "^0.32.9"
   },
   "devDependencies": {
+    "@formatjs/cli": "^4.2.12",
     "@remix-run/dev": "0.17.2",
     "@tailwindcss/forms": "^0.3.2",
     "@tailwindcss/typography": "^0.4.0",
@@ -58,14 +63,25 @@
     "@types/node": "^15.0.3",
     "@types/react": "^17.0.1",
     "@types/react-dom": "^17.0.4",
+    "@typescript-eslint/eslint-plugin": "^4.23.0",
+    "@typescript-eslint/parser": "^4.23.0",
     "autoprefixer": "^10.2.5",
     "canvas": "^2.7.0",
     "concurrently": "^6.1.0",
+    "eslint": "^7.26.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-formatjs": "^2.15.0",
+    "eslint-plugin-prettier": "^3.4.0",
+    "eslint-plugin-react-hooks": "^4.2.0",
     "postcss": "^8.2.15",
     "postcss-cli": "^8.3.1",
+    "prettier": "^2.3.0",
     "tailwindcss": "^2.1.2",
     "ts-node": "^9.1.1",
     "typescript": "^4.1.2"
+  },
+  "prettier": {
+    "singleQuote": true
   },
   "engines": {
     "node": "14",

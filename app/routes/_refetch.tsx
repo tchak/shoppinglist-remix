@@ -17,11 +17,14 @@ export default function Refetch() {
 export function useRefetch(path?: string) {
   const location = useLocation();
   const submit = useSubmit();
-  return () =>
-    submit(
-      { path: path ?? location.pathname },
-      { method: 'post', action: '/_refetch', replace: true }
-    );
+  return useCallback(
+    () =>
+      submit(
+        { path: path ?? location.pathname },
+        { method: 'post', action: '/_refetch', replace: true }
+      ),
+    [submit, path, location.pathname]
+  );
 }
 
 export function useRefetchOnWindowFocus() {
@@ -34,7 +37,7 @@ export function useRefetchOnWindowFocus() {
       refetch();
     }
     shouldRefetch.current = true;
-  }, [isVisible]);
+  }, [isVisible, refetch]);
 }
 
 function usePageVisible() {

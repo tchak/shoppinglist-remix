@@ -7,7 +7,7 @@ let hydrating = true;
 export function ClientOnly({ children }: { children: ReactNode }) {
   // set initial state to whatever the global hydrating is, so once the app is
   // hydrated, these components just render, no dance
-  let [hydrated, setHydrated] = useState(() => !hydrating);
+  const [hydrated, setHydrated] = useState(() => !hydrating);
 
   // after hydration, rerender
   useEffect(() => {
