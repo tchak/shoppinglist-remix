@@ -14,8 +14,8 @@
     "watch:css": "postcss styles --base styles --dir app/styles -w",
     "build:css": "postcss styles --base styles --dir app/styles --env production",
     "tsc": "tsc -b app/tsconfig.json",
-    "scalingo-postbuild": "yarn build && yarn migrate",
-    "postinstall": "if [ \"$INSTANCE_TYPE\" == \"production\" ]; then yarn build && yarn migrate; fi"
+    "scalingo-postbuild": "yarn migrate",
+    "postinstall": "if [ \"$ENABLE_POST_INSTALL\" == \"enabled\" ]; then yarn build && yarn migrate; fi"
   },
   "dependencies": {
     "@headlessui/react": "^1.2.0",
@@ -69,7 +69,8 @@
     "typescript": "^4.1.2"
   },
   "engines": {
-    "node": "14"
+    "node": "14",
+    "npm": "7"
   },
   "sideEffects": false
 }
