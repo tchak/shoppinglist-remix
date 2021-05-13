@@ -14,8 +14,7 @@
     "watch:css": "postcss styles --base styles --dir app/styles -w",
     "build:css": "postcss styles --base styles --dir app/styles --env production",
     "tsc": "tsc -b app/tsconfig.json",
-    "scalingo-postbuild": "npm run build && npm run migrate",
-    "postinstall": "if [ \"$ENABLE_POST_INSTALL\" == \"enabled\" ]; then npm run build && npm run migrate; fi"
+    "scalingo-postbuild": "npm run build && npm run migrate"
   },
   "dependencies": {
     "@headlessui/react": "^1.2.0",
