@@ -21,10 +21,12 @@ import stylesUrl from './styles/index.css';
 import { ApplicationLayout } from './components/ApplicationLayout';
 import { AuthenticationLayout } from './components/AuthenticationLayout';
 import { withLocale } from './sessions';
+import { getIntlMessages } from './intl';
 
 type RouteData = {
   ENV: Record<string, string>;
   locale: string;
+  messages: Record<string, string>;
 };
 
 export const links: LinksFunction = () => {
@@ -77,6 +79,7 @@ export const loader: LoaderFunction = ({ request }) =>
     json(
       {
         locale,
+        messages: getIntlMessages(locale),
         ENV: {
           APP_DOMAIN: process.env['APP_DOMAIN'],
           COMMIT_ID: process.env['COMMIT_ID'],
@@ -126,12 +129,12 @@ function Document({ children }: { children: ReactNode }) {
 }
 
 export function App() {
-  const { locale } = useRouteData<RouteData>();
+  const { locale, messages } = useRouteData<RouteData>();
   const noLayout = useMatches().some(({ handle }) => handle?.layout == false);
 
   return (
     <Document>
-      <IntlProvider locale={locale}>
+      <IntlProvider locale={locale} messages={messages}>
         {noLayout ? <AuthenticationLayout /> : <ApplicationLayout />}
       </IntlProvider>
     </Document>

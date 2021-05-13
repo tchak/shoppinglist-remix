@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { PencilIcon } from '@heroicons/react/outline';
 import { isHotkey } from 'is-hotkey';
+import { FormattedMessage } from 'react-intl';
 
 const isEnterKey = isHotkey('enter');
 const isEscKey = isHotkey('esc');
@@ -27,7 +28,7 @@ export function ListTitle({
     return (
       <h3>
         <label htmlFor="list-title" className="sr-only">
-          List title
+          <FormattedMessage defaultMessage="List title" id="EthAB9" />
         </label>
         <input
           id="list-title"

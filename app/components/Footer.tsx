@@ -1,5 +1,6 @@
 import { Link, useMatch } from 'react-router-dom';
 import { LogoutIcon, StarIcon, HeartIcon } from '@heroicons/react/outline';
+import { FormattedMessage } from 'react-intl';
 
 export function Footer() {
   const isLanding = useMatch('/');
@@ -26,7 +27,9 @@ export function Footer() {
 
           {!isLanding && (
             <Link to="/signout" className="text-gray-400 hover:text-gray-500">
-              <span className="sr-only">Sign Out</span>
+              <span className="sr-only">
+                <FormattedMessage defaultMessage="Sign Out" id="F62y+K" />
+              </span>
               <LogoutIcon className="h-5 w-5" />
             </Link>
           )}

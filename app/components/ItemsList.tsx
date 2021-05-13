@@ -13,6 +13,7 @@ import {
 } from '@reach/disclosure';
 import { animated, useSpring } from 'react-spring';
 import { useDrag } from 'react-use-gesture';
+import { FormattedMessage } from 'react-intl';
 
 import type { Item } from '../db';
 
@@ -75,11 +76,15 @@ function ListItem({
         <div className="flex justify-between flex-grow relative pointer-events-auto bg-blue-500">
           <button type="button" onClick={() => onToggle(id, !checked)}>
             <CheckedIcon className="h-8 w-8 m-2 text-white" />
-            <span className="sr-only">Check</span>
+            <span className="sr-only">
+              <FormattedMessage defaultMessage="Check" id="RDZVQL" />
+            </span>
           </button>
           <button onClick={() => setSwipe(0)}>
             <XIcon className="h-8 w-8 m-2 text-white" />
-            <span className="sr-only">Cancel</span>
+            <span className="sr-only">
+              <FormattedMessage defaultMessage="Cancel" id="47FYwb" />
+            </span>
           </button>
         </div>
       )}
@@ -87,11 +92,15 @@ function ListItem({
         <div className="flex justify-between flex-grow relative pointer-events-auto bg-red-500">
           <button onClick={() => setSwipe(0)}>
             <XIcon className="h-8 w-8 m-2 text-white" />
-            <span className="sr-only">Remove</span>
+            <span className="sr-only">
+              <FormattedMessage defaultMessage="Remove" id="G/yZLu" />
+            </span>
           </button>
           <button type="button" onClick={() => onRemove(id)}>
             <TrashIcon className="h-8 w-8 m-2 text-white" />
-            <span className="sr-only">Cancel</span>
+            <span className="sr-only">
+              <FormattedMessage defaultMessage="Cancel" id="47FYwb" />
+            </span>
           </button>
         </div>
       )}
@@ -118,7 +127,9 @@ function ListItem({
             onClick={() => onOpen(id)}
           >
             <PencilIcon className="hover:text-blue-500 h-6 w-6" />
-            <span className="sr-only">Edit</span>
+            <span className="sr-only">
+              <FormattedMessage defaultMessage="Edit" id="wEQDC6" />
+            </span>
           </button>
           <button
             className="ml-3 pointer-events-auto opacity-0 md:group-hover:opacity-100 transition duration-200 ease-in-out"
@@ -126,7 +137,9 @@ function ListItem({
             onClick={() => onToggle(id, !checked)}
           >
             <CheckedIcon className="hover:text-green-500 h-6 w-6" />
-            <span className="sr-only">Check</span>
+            <span className="sr-only">
+              <FormattedMessage defaultMessage="Check" id="RDZVQL" />
+            </span>
           </button>
           <button
             className="ml-3 pointer-events-auto opacity-0 md:group-hover:opacity-100 transition duration-200 ease-in-out"
@@ -134,7 +147,9 @@ function ListItem({
             onClick={() => onRemove(id)}
           >
             <TrashIcon className="hover:text-red-500 h-6 w-6" />
-            <span className="sr-only">Remove</span>
+            <span className="sr-only">
+              <FormattedMessage defaultMessage="Remove" id="G/yZLu" />
+            </span>
           </button>
         </Slider>
       )}
