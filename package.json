@@ -14,7 +14,7 @@
     "watch:css": "postcss styles --base styles --dir app/styles -w",
     "build:css": "postcss styles --base styles --dir app/styles --env production",
     "tsc": "tsc -b app/tsconfig.json",
-    "scalingo-postbuild": "yarn migrate",
+    "scalingo-postbuild": "yarn build && yarn migrate",
     "postinstall": "if [ \"$ENABLE_POST_INSTALL\" == \"enabled\" ]; then yarn build && yarn migrate; fi"
   },
   "dependencies": {
