@@ -5,7 +5,15 @@ import {
   MetaFunction,
   useRouteData,
 } from 'remix';
-import { Meta, Links, Scripts, LiveReload, useMatches, json } from 'remix';
+import {
+  Meta,
+  Links,
+  Scripts,
+  LiveReload,
+  useMatches,
+  json,
+  usePendingLocation,
+} from 'remix';
 import { withProfiler } from '@sentry/react';
 import { IntlProvider } from 'react-intl';
 
@@ -85,16 +93,16 @@ export const loader: LoaderFunction = ({ request }) =>
 
 function Document({ children }: { children: ReactNode }) {
   const { ENV, locale } = useRouteData<RouteData>();
+  const pendingLocation = usePendingLocation();
 
   return (
     <html lang={locale}>
       <head>
         <meta charSet="utf-8" />
-        <link rel="icon" href="/favicon.png" type="image/png" />
         <Meta />
         <Links />
       </head>
-      <body className="bg-gray-200">
+      <body className={`bg-gray-200 ${pendingLocation ? 'opacity-50' : ''}`}>
         {children}
 
         <Scripts />
@@ -117,7 +125,7 @@ function Document({ children }: { children: ReactNode }) {
   );
 }
 
-export default withProfiler(function App() {
+export function App() {
   const { locale } = useRouteData<RouteData>();
   const noLayout = useMatches().some(({ handle }) => handle?.layout == false);
 
@@ -128,7 +136,7 @@ export default withProfiler(function App() {
       </IntlProvider>
     </Document>
   );
-});
+}
 
 export function ErrorBoundary({ error }: { error: Error }) {
   return (
@@ -142,3 +150,5 @@ export function ErrorBoundary({ error }: { error: Error }) {
     </Document>
   );
 }
+
+export default withProfiler(App);
