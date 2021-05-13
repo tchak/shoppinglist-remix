@@ -4,18 +4,18 @@
   "description": "",
   "license": "MIT",
   "scripts": {
-    "build": "yarn build:css && yarn remix:build",
-    "dev": "concurrently \"yarn:watch:css\" \"yarn:remix:run\"",
+    "build": "npm run build:css && npm run remix:build",
+    "dev": "concurrently \"npm:watch:css\" \"npm:remix:run\"",
     "remix:run": "remix run",
     "remix:build": "remix build",
     "start": "remix-serve build",
-    "migrate": "yarn prisma migrate deploy",
+    "migrate": "npm run prisma migrate deploy",
     "ts-node": "ts-node --compiler-options '{\"module\":\"CommonJS\"}'",
     "watch:css": "postcss styles --base styles --dir app/styles -w",
     "build:css": "postcss styles --base styles --dir app/styles --env production",
     "tsc": "tsc -b app/tsconfig.json",
-    "scalingo-postbuild": "yarn build && yarn migrate",
-    "postinstall": "if [ \"$ENABLE_POST_INSTALL\" == \"enabled\" ]; then yarn build && yarn migrate; fi"
+    "scalingo-postbuild": "npm run build && npm run migrate",
+    "postinstall": "if [ \"$ENABLE_POST_INSTALL\" == \"enabled\" ]; then npm run build && npm run migrate; fi"
   },
   "dependencies": {
     "@headlessui/react": "^1.2.0",
