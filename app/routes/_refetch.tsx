@@ -17,14 +17,11 @@ export default function Refetch() {
 export function useRefetch(path?: string) {
   const location = useLocation();
   const submit = useSubmit();
-  return useCallback(
-    () =>
-      submit(
-        { path: path ?? location.pathname },
-        { method: 'post', action: '/_refetch', replace: true }
-      ),
-    [submit, path, location.pathname]
-  );
+  return () =>
+    submit(
+      { path: path ?? location.pathname },
+      { method: 'post', action: '/_refetch', replace: true }
+    );
 }
 
 export function useRefetchOnWindowFocus() {
@@ -37,7 +34,8 @@ export function useRefetchOnWindowFocus() {
       refetch();
     }
     shouldRefetch.current = true;
-  }, [isVisible, refetch]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isVisible]);
 }
 
 function usePageVisible() {
