@@ -1,5 +1,9 @@
-import messages from './lang/compiled/en-GB.json';
+import messagesEnGb from './lang/compiled/en-GB.json';
+
+const MESSAGES: Record<string, string> = {
+  'en-GB': messagesEnGb,
+};
 
 export function getIntlMessages(locale: string) {
-  return messages;
+  return MESSAGES[locale];
 }
