@@ -71,7 +71,7 @@ export const loader: LoaderFunction = ({ request, params }) =>
         where: { id: params.id },
         include: {
           users: { select: { userId: true } },
-          items: { orderBy: { createAt: 'desc' } },
+          items: { orderBy: { createdAt: 'desc' } },
         },
       });
       if (!list) {

@@ -23,7 +23,7 @@ export const loader: LoaderFunction = ({ request }) =>
     requireUser(session, async (user): Promise<RouteData> => {
       const lists = await prisma.list.findMany({
         where: { users: { some: { user } } },
-        orderBy: { createAt: 'desc' },
+        orderBy: { createdAt: 'desc' },
       });
       return lists.map((list) => ({
         ...list,
