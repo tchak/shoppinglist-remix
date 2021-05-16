@@ -64,11 +64,11 @@ export const meta: MetaFunction = ({ data }: { data: RouteData }) => {
   return { title: data.title };
 };
 
-export const loader: LoaderFunction = ({ request, params }) =>
+export const loader: LoaderFunction = ({ request, params: { list: listId } }) =>
   withSession(request, (session) =>
     requireUser(session, async (user): Promise<RouteData | Response> => {
       const list = await prisma.list.findFirst({
-        where: { id: params.id },
+        where: { id: listId },
         include: {
           users: { select: { userId: true } },
           items: { orderBy: { createdAt: 'desc' } },
