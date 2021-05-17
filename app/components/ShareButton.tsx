@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { ShareIcon } from '@heroicons/react/outline';
 import useClipboard from 'react-use-clipboard';
 import ms from 'ms';
+import { Tooltip } from '@reach/tooltip';
 
 import { Notification } from './Notification';
 
@@ -10,9 +11,11 @@ export function ShareButton() {
   return (
     <>
       <Notification isOpen={isShared} onClose={close} text="Link copied!" />
-      <button type="button" onClick={share}>
-        <ShareIcon className="text-gray-900 h-8 w-8" />
-      </button>
+      <Tooltip label="Share list">
+        <button type="button" onClick={share}>
+          <ShareIcon className="text-gray-900 h-8 w-8" />
+        </button>
+      </Tooltip>
     </>
   );
 }

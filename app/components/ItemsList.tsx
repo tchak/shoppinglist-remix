@@ -14,6 +14,7 @@ import {
 import { animated, useSpring } from 'react-spring';
 import { useDrag } from 'react-use-gesture';
 import { FormattedMessage } from 'react-intl';
+import { Tooltip } from '@reach/tooltip';
 
 import type { Item } from '../db';
 
@@ -121,36 +122,44 @@ function ListItem({
             <p className="text-sm text-gray-500">{note}</p>
           </div>
 
-          <button
-            className="ml-3 pointer-events-auto opacity-0 md:group-hover:opacity-100 transition duration-200 ease-in-out"
-            type="button"
-            onClick={() => onOpen(id)}
-          >
-            <PencilIcon className="hover:text-blue-500 h-6 w-6" />
-            <span className="sr-only">
-              <FormattedMessage defaultMessage="Edit" id="wEQDC6" />
-            </span>
-          </button>
-          <button
-            className="ml-3 pointer-events-auto opacity-0 md:group-hover:opacity-100 transition duration-200 ease-in-out"
-            type="button"
-            onClick={() => onToggle(id, !checked)}
-          >
-            <CheckedIcon className="hover:text-green-500 h-6 w-6" />
-            <span className="sr-only">
-              <FormattedMessage defaultMessage="Check" id="RDZVQL" />
-            </span>
-          </button>
-          <button
-            className="ml-3 pointer-events-auto opacity-0 md:group-hover:opacity-100 transition duration-200 ease-in-out"
-            type="button"
-            onClick={() => onRemove(id)}
-          >
-            <TrashIcon className="hover:text-red-500 h-6 w-6" />
-            <span className="sr-only">
-              <FormattedMessage defaultMessage="Remove" id="G/yZLu" />
-            </span>
-          </button>
+          <Tooltip label="Add note">
+            <button
+              className="ml-3 pointer-events-auto opacity-0 md:group-hover:opacity-100 transition duration-200 ease-in-out"
+              type="button"
+              onClick={() => onOpen(id)}
+            >
+              <PencilIcon className="hover:text-blue-500 h-6 w-6" />
+              <span className="sr-only">
+                <FormattedMessage defaultMessage="Edit" id="wEQDC6" />
+              </span>
+            </button>
+          </Tooltip>
+
+          <Tooltip label="Check item">
+            <button
+              className="ml-3 pointer-events-auto opacity-0 md:group-hover:opacity-100 transition duration-200 ease-in-out"
+              type="button"
+              onClick={() => onToggle(id, !checked)}
+            >
+              <CheckedIcon className="hover:text-green-500 h-6 w-6" />
+              <span className="sr-only">
+                <FormattedMessage defaultMessage="Check" id="RDZVQL" />
+              </span>
+            </button>
+          </Tooltip>
+
+          <Tooltip label="Delete item">
+            <button
+              className="ml-3 pointer-events-auto opacity-0 md:group-hover:opacity-100 transition duration-200 ease-in-out"
+              type="button"
+              onClick={() => onRemove(id)}
+            >
+              <TrashIcon className="hover:text-red-500 h-6 w-6" />
+              <span className="sr-only">
+                <FormattedMessage defaultMessage="Remove" id="G/yZLu" />
+              </span>
+            </button>
+          </Tooltip>
         </Slider>
       )}
     </li>

@@ -83,14 +83,16 @@ export default function ListsIndexRoute() {
             </div>
           </div>
           {!list.isShared && (
-            <button
-              className="px-3 opacity-0 group-hover:opacity-100 transition duration-200 ease-in-out"
-              type="button"
-              data-list-item-control
-              onClick={() => deleteList(list.id)}
-            >
-              <TrashIcon className="hover:text-red-500 h-5 w-5" />
-            </button>
+            <Tooltip label="Delete list">
+              <button
+                className="px-3 opacity-0 group-hover:opacity-100 transition duration-200 ease-in-out"
+                type="button"
+                data-list-item-control
+                onClick={() => deleteList(list.id)}
+              >
+                <TrashIcon className="hover:text-red-500 h-5 w-5" />
+              </button>
+            </Tooltip>
           )}
         </li>
       ))}
