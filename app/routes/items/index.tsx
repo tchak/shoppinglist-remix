@@ -2,7 +2,7 @@ import type { LoaderFunction } from 'remix';
 import { json } from 'remix';
 
 import { withSession, requireUser } from '../../sessions';
-import { autocompleteForUser } from '../../fuse/autocomplete.server';
+import { autocompleteForUser } from '../../lib/autocomplete.server';
 
 export const loader: LoaderFunction = ({ request }) =>
   withSession(request, (session) =>

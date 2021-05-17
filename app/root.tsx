@@ -21,7 +21,7 @@ import stylesUrl from './styles/index.css';
 import { ApplicationLayout } from './components/ApplicationLayout';
 import { AuthenticationLayout } from './components/AuthenticationLayout';
 import { withLocale } from './sessions';
-import { getIntlMessages } from './intl';
+import { getIntlMessages } from './lib/intl';
 
 type RouteData = {
   ENV: Record<string, string>;

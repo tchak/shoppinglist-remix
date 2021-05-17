@@ -11,7 +11,7 @@ import * as Yup from 'yup';
 import { withSession, requireUser } from '../../sessions';
 import { withBody } from '../../withBody';
 import { prisma, List, Item } from '../../db';
-import { autocompleteForUser } from '../../fuse/autocomplete.server';
+import { autocompleteForUser } from '../../lib/autocomplete.server';
 
 import { ListTitle } from '../../components/ListTitle';
 import { AddItemCombobox } from '../../components/AddItemCombobox';

@@ -14,7 +14,7 @@ import {
 import { LockClosedIcon, XCircleIcon } from '@heroicons/react/solid';
 import * as Yup from 'yup';
 
-import { verify } from '../argon2.server';
+import { verify } from '../lib/argon2.server';
 import { withSession, requireUser } from '../sessions';
 import { prisma } from '../db';
 import { withBody } from '../withBody';

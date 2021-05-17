@@ -14,7 +14,7 @@ import {
 import { UserIcon, XCircleIcon } from '@heroicons/react/solid';
 import * as Yup from 'yup';
 
-import { hash } from '../argon2.server';
+import { hash } from '../lib/argon2.server';
 import { withSession, requireUser } from '../sessions';
 import { prisma } from '../db';
 import { withBody } from '../withBody';

@@ -1,8 +1,8 @@
 import Fuse from 'fuse.js';
 import Cache from 'lru-cache';
 
-import index from './food-index.json';
-import list from './food-list.json';
+import index from './autocomplete/food-index.json';
+import list from './autocomplete/food-list.json';
 
 import { prisma } from '../db';
 
