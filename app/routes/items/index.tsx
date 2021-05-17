@@ -9,7 +9,9 @@ export const loader: LoaderFunction = ({ request }) =>
     requireUser(session, () => {
       const url = new URL(request.url);
       const term = url.searchParams.get('term');
-      const items = term ? food.search(term).map((result) => result.item) : [];
+      const items = term
+        ? food.search(term, { limit: 6 }).map((result) => result.item)
+        : [];
 
       return json(items);
     })
