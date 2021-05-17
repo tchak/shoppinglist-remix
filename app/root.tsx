@@ -20,6 +20,7 @@ import { IntlProvider } from 'react-intl';
 import stylesUrl from './styles/index.css';
 import { ApplicationLayout } from './components/ApplicationLayout';
 import { AuthenticationLayout } from './components/AuthenticationLayout';
+import { Progress } from './components/Progress';
 import { withLocale } from './sessions';
 import { getIntlMessages } from './lib/intl';
 
@@ -105,7 +106,8 @@ function Document({ children }: { children: ReactNode }) {
         <Meta />
         <Links />
       </head>
-      <body className={`bg-gray-200 ${pendingLocation ? 'opacity-50' : ''}`}>
+      <body className="bg-gray-200">
+        <Progress isAnimating={!!pendingLocation} />
         {children}
 
         <Scripts />
