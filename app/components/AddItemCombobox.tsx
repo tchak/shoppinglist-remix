@@ -1,4 +1,4 @@
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useEffect } from 'react';
 import {
   Combobox,
   ComboboxInput,
@@ -6,14 +6,8 @@ import {
   ComboboxList,
   ComboboxOption,
 } from '@reach/combobox';
-import { useThrottledCallback } from 'use-debounce';
+import { useDebounce } from 'use-debounce';
 import { PlusIcon } from '@heroicons/react/solid';
-
-import food from '../data/food';
-
-function titleize(input: string) {
-  return input.toLowerCase().replace(/(?:^|\s|-)\S/g, (x) => x.toUpperCase());
-}
 
 export function AddItemCombobox({
   onSelect,
@@ -21,7 +15,7 @@ export function AddItemCombobox({
   onSelect: (value: string) => void;
 }) {
   const [term, setTerm] = useState('');
-  const items = useFoodMatch(term);
+  const items = useItemSuggestions(term);
 
   const onSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -48,6 +42,10 @@ export function AddItemCombobox({
           id="item-title"
           type="text"
           placeholder="Add Item"
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="off"
+          autoFocus={true}
           className="shadow-sm focus:ring-green-500 focus:border-green-500 flex-grow sm:text-sm border-gray-300 rounded-md"
           value={term}
           onChange={({ currentTarget: { value } }) => setTerm(value)}
@@ -77,17 +75,39 @@ export function AddItemCombobox({
   );
 }
 
-function useFoodMatch(term: string) {
-  const [items, setItems] = useState<null | string[]>(null);
-  const match = useThrottledCallback(
-    (term: string) =>
-      setItems(
-        term.trim() === ''
-          ? null
-          : food.search(term).map((result) => result.item)
-      ),
-    100
-  );
-  term ? requestAnimationFrame(() => match(term)) : null;
+function useItemSuggestions(term: string): string[] {
+  const [items, setItems] = useState<string[]>([]);
+  const [debouncedTerm] = useDebounce(term, 200);
+  useEffect(() => {
+    if (debouncedTerm.trim() != '') {
+      const controller = new AbortController();
+      fetchItemSuggestions(debouncedTerm, controller.signal).then((items) =>
+        setItems(items)
+      );
+      return () => controller.abort();
+    }
+  }, [debouncedTerm]);
   return items;
+}
+
+const cache: Record<string, string[]> = {};
+async function fetchItemSuggestions(
+  term: string,
+  signal: AbortSignal
+): Promise<string[]> {
+  if (cache[term]) {
+    return cache[term];
+  }
+  const url = new URL('/items', location.toString());
+  url.searchParams.set('_data', 'routes/items/index');
+  url.searchParams.set('term', term);
+  const result = await fetch(url.toString(), {
+    signal,
+  }).then<string[]>((response) => response.json());
+  cache[term] = result;
+  return result;
+}
+
+function titleize(input: string) {
+  return input.toLowerCase().replace(/(?:^|\s|-)\S/g, (x) => x.toUpperCase());
 }
