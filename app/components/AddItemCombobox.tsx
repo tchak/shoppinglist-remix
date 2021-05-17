@@ -22,6 +22,7 @@ export function AddItemCombobox({
     if (term.length >= 2) {
       onSelect(titleize(term));
       setTerm('');
+      cache.clear();
     }
   };
 
@@ -90,22 +91,24 @@ function useItemSuggestions(term: string): string[] {
   return items;
 }
 
-const cache: Record<string, string[]> = {};
+const cache = new Map<string, string[]>();
 async function fetchItemSuggestions(
   term: string,
   signal: AbortSignal
 ): Promise<string[]> {
-  if (cache[term]) {
-    return cache[term];
+  let items = cache.get(term);
+
+  if (!items) {
+    const url = new URL('/items', location.toString());
+    url.searchParams.set('_data', 'routes/items/index');
+    url.searchParams.set('term', term);
+    items = await fetch(url.toString(), {
+      signal,
+    }).then<string[]>((response) => response.json());
+    cache.set(term, items);
   }
-  const url = new URL('/items', location.toString());
-  url.searchParams.set('_data', 'routes/items/index');
-  url.searchParams.set('term', term);
-  const result = await fetch(url.toString(), {
-    signal,
-  }).then<string[]>((response) => response.json());
-  cache[term] = result;
-  return result;
+
+  return items;
 }
 
 function titleize(input: string) {

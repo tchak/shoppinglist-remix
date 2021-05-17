@@ -2,16 +2,14 @@ import type { LoaderFunction } from 'remix';
 import { json } from 'remix';
 
 import { withSession, requireUser } from '../../sessions';
-import food from '../../data/food.server';
+import { autocompleteForUser } from '../../fuse/autocomplete.server';
 
 export const loader: LoaderFunction = ({ request }) =>
   withSession(request, (session) =>
-    requireUser(session, () => {
+    requireUser(session, async (user) => {
       const url = new URL(request.url);
       const term = url.searchParams.get('term');
-      const items = term
-        ? food.search(term, { limit: 6 }).map((result) => result.item)
-        : [];
+      const items = await autocomplete(term, user.id);
 
       return json(items);
     })
@@ -19,4 +17,13 @@ export const loader: LoaderFunction = ({ request }) =>
 
 export default function ItemsIndexRoute() {
   return null;
+}
+
+async function autocomplete(term: string | null, userId: string) {
+  if (term) {
+    return (await autocompleteForUser(userId))
+      .search(term, { limit: 6 })
+      .map((result) => result.item);
+  }
+  return [];
 }
