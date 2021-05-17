@@ -3,15 +3,30 @@ import { ShareIcon } from '@heroicons/react/outline';
 import useClipboard from 'react-use-clipboard';
 import ms from 'ms';
 import { Tooltip } from '@reach/tooltip';
+import { useIntl } from 'react-intl';
 
 import { Notification } from './Notification';
 
 export function ShareButton() {
   const [isShared, { share, close }] = useShare();
+  const intl = useIntl();
+
   return (
     <>
-      <Notification isOpen={isShared} onClose={close} text="Link copied!" />
-      <Tooltip label="Share list">
+      <Notification
+        isOpen={isShared}
+        onClose={close}
+        text={intl.formatMessage({
+          defaultMessage: 'Link copied!',
+          id: '/vCdX1',
+        })}
+      />
+      <Tooltip
+        label={intl.formatMessage({
+          defaultMessage: 'Share list',
+          id: 'Zfhxw8',
+        })}
+      >
         <button type="button" onClick={share}>
           <ShareIcon className="text-gray-900 h-8 w-8" />
         </button>

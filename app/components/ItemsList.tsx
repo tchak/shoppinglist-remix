@@ -81,7 +81,7 @@ function ListItem({
               <FormattedMessage defaultMessage="Check" id="RDZVQL" />
             </span>
           </button>
-          <button onClick={() => setSwipe(0)}>
+          <button type="button" onClick={() => setSwipe(0)}>
             <XIcon className="h-8 w-8 m-2 text-white" />
             <span className="sr-only">
               <FormattedMessage defaultMessage="Cancel" id="47FYwb" />
@@ -91,7 +91,7 @@ function ListItem({
       )}
       {isRemoving && (
         <div className="flex justify-between flex-grow relative pointer-events-auto bg-red-500">
-          <button onClick={() => setSwipe(0)}>
+          <button type="button" onClick={() => setSwipe(0)}>
             <XIcon className="h-8 w-8 m-2 text-white" />
             <span className="sr-only">
               <FormattedMessage defaultMessage="Remove" id="G/yZLu" />
