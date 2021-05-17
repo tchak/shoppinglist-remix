@@ -4,7 +4,7 @@ export const meta: MetaFunction = () => {
   return { title: "Ain't nothing here" };
 };
 
-export default function FourOhFour() {
+export default function FourOhFourRoute() {
   return (
     <div>
       <h1>404</h1>

@@ -10,7 +10,7 @@ export const action: ActionFunction = async ({ request }) => {
   return redirect(String(body.get('path')));
 };
 
-export default function Refetch() {
+export default function RefetchRoute() {
   return null;
 }
 

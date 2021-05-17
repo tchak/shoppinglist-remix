@@ -17,6 +17,6 @@ export const loader: LoaderFunction = ({ request }) =>
     })
   );
 
-export default function ItemsRoute() {
+export default function ItemsIndexRoute() {
   return null;
 }

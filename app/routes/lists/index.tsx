@@ -56,7 +56,7 @@ export const action: ActionFunction = ({ request }) =>
     )
   );
 
-export default function ListsIndex() {
+export default function ListsIndexRoute() {
   const lists = useRouteData<RouteData>();
   const submit = useSubmit();
   const deleteList = (id: string) =>

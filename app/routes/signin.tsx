@@ -78,7 +78,7 @@ export const action: ActionFunction = ({ request }) =>
     )
   );
 
-export default function SignIn() {
+export default function SignInRoute() {
   const { error } = useRouteData<RouteData>();
   const pendingForm = usePendingFormSubmit();
 

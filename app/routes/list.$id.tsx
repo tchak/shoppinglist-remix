@@ -4,6 +4,6 @@ import { redirect } from 'remix';
 export const loader: LoaderFunction = ({ params }) =>
   redirect(`/lists/${params.id}`);
 
-export default function ListShow() {
+export default function ListShowRoute() {
   return null;
 }

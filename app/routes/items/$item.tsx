@@ -63,6 +63,6 @@ export const action: ActionFunction = async ({
     )
   );
 
-export default function ItemsUpdateDelete() {
+export default function ItemsShowRoute() {
   return null;
 }

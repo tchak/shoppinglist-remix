@@ -135,7 +135,7 @@ export const action: ActionFunction = async ({
     )
   );
 
-export default function ListsShow() {
+export default function ListsShowRoute() {
   const [openItem, setOpenItem] = useState<Item | undefined>();
   const list = useRouteData<RouteData>();
   const {

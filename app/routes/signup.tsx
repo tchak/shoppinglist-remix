@@ -69,7 +69,7 @@ export const action: ActionFunction = ({ request }) =>
     )
   );
 
-export default function SignUp() {
+export default function SignUpRoute() {
   const { error } = useRouteData<RouteData>();
   const pendingForm = usePendingFormSubmit();
 

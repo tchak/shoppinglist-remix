@@ -9,6 +9,6 @@ export const loader: LoaderFunction = ({ request }) =>
     return redirect('/signin');
   });
 
-export default function SignOut() {
+export default function SignOutRoute() {
   return null;
 }
