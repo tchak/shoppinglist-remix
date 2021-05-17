@@ -11,7 +11,7 @@ import * as Yup from 'yup';
 import { withSession, requireUser } from '../../sessions';
 import { withBody } from '../../withBody';
 import { prisma, List, Item } from '../../db';
-import { autocompleteForUser } from '../../lib/autocomplete.server';
+import { autocompleteAddTerm } from '../../lib/autocomplete.server';
 
 import { ListTitle } from '../../components/ListTitle';
 import { AddItemCombobox } from '../../components/AddItemCombobox';
@@ -107,9 +107,7 @@ export const action: ActionFunction = async ({
             await prisma.item.create({
               data: { list: { connect: list }, title },
             });
-
-            const fuse = await autocompleteForUser(user.id);
-            fuse.add(title);
+            await autocompleteAddTerm(title, user.id);
 
             return redirect(`/lists/${listId}`);
           })

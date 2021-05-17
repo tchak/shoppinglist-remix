@@ -17,9 +17,7 @@ const cache = new Cache<string, Fuse<string>>({
   updateAgeOnGet: true,
 });
 
-export async function autocompleteForUser(
-  userId: string
-): Promise<Fuse<string>> {
+async function autocompleteForUser(userId: string): Promise<Fuse<string>> {
   let fuse = cache.get(userId);
   if (!fuse) {
     const index = Fuse.parseIndex(baseIndex);
@@ -35,4 +33,20 @@ export async function autocompleteForUser(
     cache.set(userId, fuse);
   }
   return fuse;
+}
+
+export async function autocompleteSearchTerm(
+  term: string,
+  userId: string
+): Promise<string[]> {
+  const fuse = await autocompleteForUser(userId);
+  return fuse.search(term, { limit: 6 }).map((result) => result.item);
+}
+
+export async function autocompleteAddTerm(
+  term: string,
+  userId: string
+): Promise<void> {
+  const fuse = await autocompleteForUser(userId);
+  fuse.add(term);
 }
