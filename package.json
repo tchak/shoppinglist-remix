@@ -21,7 +21,7 @@
     "extract:i18n": "formatjs extract 'app/**/*.ts*' --out-file app/lang/en-GB.json --id-interpolation-pattern '[sha512:contenthash:base64:6]'",
     "compile:i18n": "formatjs compile app/lang/en-GB.json --ast --out-file app/lang/compiled/en-GB.json",
     "test": "run-s typecheck lint",
-    "scalingo-postbuild": "run-s test build:i18n build migrate",
+    "scalingo-postbuild": "run-s test compile:i18n build migrate",
     "prebuild": "npm run clean",
     "postinstall": "npm run build"
   },
