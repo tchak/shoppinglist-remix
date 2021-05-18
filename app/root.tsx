@@ -17,6 +17,7 @@ import {
 import { withProfiler } from '@sentry/react';
 import { IntlProvider } from 'react-intl';
 import { useLocation } from 'react-router-dom';
+import { XCircleIcon } from '@heroicons/react/solid';
 
 import stylesUrl from './styles/index.css';
 import { ApplicationLayout } from './components/ApplicationLayout';
@@ -96,10 +97,17 @@ export const loader: LoaderFunction = ({ request }) =>
     )
   );
 
-function Document({ children }: { children: ReactNode }) {
-  const { ENV, locale } = useRouteData<RouteData>();
-  const pendingLocation = usePendingLocation();
-
+function Document({
+  locale = 'en-GB',
+  pendingLocation = false,
+  ENV = {},
+  children,
+}: {
+  pendingLocation?: boolean;
+  ENV?: Record<string, string>;
+  locale?: string;
+  children: ReactNode;
+}) {
   return (
     <html lang={locale}>
       <head>
@@ -133,11 +141,12 @@ function Document({ children }: { children: ReactNode }) {
 
 export function App() {
   useTemporaryScrollManagement();
-  const { locale, messages } = useRouteData<RouteData>();
+  const pendingLocation = usePendingLocation();
+  const { locale, ENV, messages } = useRouteData<RouteData>();
   const noLayout = useMatches().some(({ handle }) => handle?.layout == false);
 
   return (
-    <Document>
+    <Document pendingLocation={!!pendingLocation} locale={locale} ENV={ENV}>
       <IntlProvider locale={locale} messages={messages}>
         {noLayout ? <AuthenticationLayout /> : <ApplicationLayout />}
       </IntlProvider>
@@ -148,12 +157,26 @@ export function App() {
 export function ErrorBoundary({ error }: { error: Error }) {
   return (
     <Document>
-      <h1>App Error</h1>
-      <pre>{error.message}</pre>
-      <p>
-        Replace this UI with what you want users to see when your app throws
-        uncaught errors.
-      </p>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-3xl mx-auto mt-10">
+          <div className="rounded-md bg-red-50 p-4">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <XCircleIcon
+                  className="h-5 w-5 text-red-400"
+                  aria-hidden="true"
+                />
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-red-800">
+                  Application Error
+                </h3>
+                <div className="mt-2 text-sm text-red-700">{error.message}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </Document>
   );
 }
