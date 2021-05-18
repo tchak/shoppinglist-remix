@@ -7,7 +7,7 @@
     "lint": "eslint . --ext .ts,.tsx",
     "lint:fix": "eslint . --ext .ts,.tsx --fix",
     "typecheck": "tsc -b app/tsconfig.json",
-    "build": "run-s build:css build:remix",
+    "build": "run-s compile:i18n build:css build:remix",
     "clean": "rimraf ./node_modules/.cache ./build ./public/build \"./app/styles/**/*.css\"",
     "dev": "concurrently \"npm:watch:css\" \"npm:start:dev\"",
     "start": "remix-serve build",
@@ -21,9 +21,8 @@
     "extract:i18n": "formatjs extract 'app/**/*.ts*' --out-file app/lang/en-GB.json --id-interpolation-pattern '[sha512:contenthash:base64:6]'",
     "compile:i18n": "formatjs compile app/lang/en-GB.json --ast --out-file app/lang/compiled/en-GB.json",
     "test": "run-s typecheck lint",
-    "scalingo-postbuild": "run-s test compile:i18n build migrate",
-    "prebuild": "npm run clean",
-    "postinstall": "npm run build"
+    "scalingo-postbuild": "run-s test build migrate",
+    "prebuild": "npm run clean"
   },
   "dependencies": {
     "@headlessui/react": "^1.2.0",
