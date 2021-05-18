@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { ReactNode, useRef, useEffect } from 'react';
 import {
   LinksFunction,
   LoaderFunction,
@@ -16,6 +16,7 @@ import {
 } from 'remix';
 import { withProfiler } from '@sentry/react';
 import { IntlProvider } from 'react-intl';
+import { useLocation } from 'react-router-dom';
 
 import stylesUrl from './styles/index.css';
 import { ApplicationLayout } from './components/ApplicationLayout';
@@ -131,6 +132,7 @@ function Document({ children }: { children: ReactNode }) {
 }
 
 export function App() {
+  useTemporaryScrollManagement();
   const { locale, messages } = useRouteData<RouteData>();
   const noLayout = useMatches().some(({ handle }) => handle?.layout == false);
 
@@ -157,3 +159,22 @@ export function ErrorBoundary({ error }: { error: Error }) {
 }
 
 export default withProfiler(App);
+
+function useTemporaryScrollManagement() {
+  const location = useLocation();
+  const locations = useRef<Set<string>>();
+
+  if (!locations.current) {
+    locations.current = new Set();
+    locations.current.add(location.key);
+  }
+
+  useEffect(() => {
+    const wasWeirdHistoryBug = location.key === 'default';
+    if (wasWeirdHistoryBug || locations.current?.has(location.key)) return;
+    locations.current?.add(location.key);
+    requestAnimationFrame(() => {
+      window.scrollTo(0, 0);
+    });
+  }, [location]);
+}
