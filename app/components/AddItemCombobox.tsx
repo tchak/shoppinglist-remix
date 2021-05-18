@@ -46,7 +46,6 @@ export function AddItemCombobox({
           autoComplete="off"
           autoCorrect="off"
           autoCapitalize="off"
-          autoFocus={true}
           className="shadow-sm focus:ring-green-500 focus:border-green-500 flex-grow sm:text-sm border-gray-300 rounded-md"
           value={term}
           onChange={({ currentTarget: { value } }) => setTerm(value)}
