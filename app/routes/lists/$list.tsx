@@ -99,15 +99,17 @@ export const action: ActionFunction = async ({
           .post(createItemSchema, async ({ title }) => {
             const list = await prisma.list.findFirst({
               where: { id: listId, users: { some: { user } } },
-              select: { id: true },
+              select: { id: true, users: { select: { userId: true } } },
             });
             if (!list) {
               return redirect('/');
             }
             await prisma.item.create({
-              data: { list: { connect: list }, title },
+              data: { list: { connect: { id: listId } }, title },
             });
-            await autocompleteAddTerm(title, user.id);
+            for (const userId of list.users.map(({ userId }) => userId)) {
+              await autocompleteAddTerm(title, userId);
+            }
 
             return redirect(`/lists/${listId}`);
           })
