@@ -24,7 +24,7 @@ import { ApplicationLayout } from './components/ApplicationLayout';
 import { AuthenticationLayout } from './components/AuthenticationLayout';
 import { Progress } from './components/Progress';
 import { withLocale } from './sessions';
-import { getIntlMessages } from './lib/intl';
+import { getIntlMessages, DEFAULT_LOCALE } from './lib/intl';
 
 type RouteData = {
   ENV: Record<string, string>;
@@ -98,7 +98,7 @@ export const loader: LoaderFunction = ({ request }) =>
   );
 
 function Document({
-  locale = 'en-GB',
+  locale = DEFAULT_LOCALE,
   pendingLocation = false,
   ENV = {},
   children,
@@ -116,7 +116,7 @@ function Document({
         <Links />
       </head>
       <body className="bg-gray-200">
-        <Progress isAnimating={!!pendingLocation} />
+        <Progress isAnimating={pendingLocation} />
         {children}
 
         <Scripts />

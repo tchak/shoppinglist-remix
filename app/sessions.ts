@@ -1,9 +1,9 @@
 import type { Request, Session, LoaderFunction } from 'remix';
 import { Response, createCookieSessionStorage, json, redirect } from 'remix';
 import { DateTime } from 'luxon';
-import resolveAcceptLanguage from 'resolve-accept-language';
 
 import { prisma, User } from './db';
+import { getLocale } from './lib/intl';
 
 export const { getSession, commitSession, destroySession } =
   createCookieSessionStorage({
@@ -46,7 +46,7 @@ export async function withSession(
 
 export async function withLocale(request: Request, next: NextFunction<string>) {
   const session = await getSession(request.headers.get('cookie'));
-  const locale = getLocaleFromHeader(request, ['en-GB'], 'en-GB');
+  const locale = getLocale(request.headers.get('accept-language'));
 
   return next(session.get('locale') ?? locale);
 }
@@ -66,21 +66,4 @@ export async function requireUser(
     }
   }
   return fallback();
-}
-
-function getLocaleFromHeader(
-  request: Request,
-  supportedLocales: string[],
-  defaultLocale: string
-) {
-  try {
-    return resolveAcceptLanguage(
-      request.headers.get('accept-language')!,
-      supportedLocales,
-      defaultLocale
-    );
-  } catch (e) {
-    console.error(`Error parsing accept language:`, e.message);
-    return 'en-US';
-  }
 }
