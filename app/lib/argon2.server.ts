@@ -1,3 +1,1 @@
-import { hash, verify } from 'argon2';
-
-export { hash, verify };
+export { hash, verify } from 'argon2';
