@@ -5,7 +5,7 @@ import type {
   ActionFunction,
   Response,
 } from 'remix';
-import { useRouteData, redirect, useSubmit } from 'remix';
+import { useRouteData, useSubmit } from 'remix';
 import * as Yup from 'yup';
 
 import { withSession, requireUser } from '../../sessions';
@@ -88,7 +88,7 @@ export const action: ActionFunction = async ({
               select: { id: true, users: { select: { userId: true } } },
             });
             if (!list) {
-              return redirect('/');
+              return '/';
             }
             await prisma.item.create({
               data: { list: { connect: { id: listId } }, title },
@@ -97,14 +97,14 @@ export const action: ActionFunction = async ({
               await autocompleteAddTerm(title, userId);
             }
 
-            return redirect(`/lists/${listId}`);
+            return `/lists/${listId}`;
           })
           .put(updateListSchema, async ({ title }) => {
             await prisma.list.updateMany({
               where: { id: listId, users: { some: { user } } },
               data: { title },
             });
-            return redirect(`/lists/${listId}`);
+            return `/lists/${listId}`;
           })
           .delete(async () => {
             await prisma.$transaction([
@@ -116,11 +116,11 @@ export const action: ActionFunction = async ({
               }),
               prisma.list.deleteMany({ where: { id: listId, user } }),
             ]);
-            return redirect('/lists');
+            return '/lists';
           })
           .error((error) => {
             session.flash('error', error);
-            return redirect(`/lists/${listId}`);
+            return `/lists/${listId}`;
           })
       )
     )

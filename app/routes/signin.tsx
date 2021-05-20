@@ -49,7 +49,7 @@ export const action: ActionFunction = ({ request }) =>
   withSession(request, (session) =>
     requireUser(
       session,
-      () => redirect('/'),
+      () => '/',
       () =>
         withBody(request, (router) =>
           router
@@ -67,12 +67,12 @@ export const action: ActionFunction = ({ request }) =>
                 });
               }
 
-              return redirect('/');
+              return '/';
             })
             .error((error) => {
               session.flash('error', error);
               session.unset('user');
-              return redirect('/signin');
+              return '/signin';
             })
         )
     )

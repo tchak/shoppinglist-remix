@@ -28,13 +28,13 @@ export const action: ActionFunction = async ({
               where: { list: { users: { some: { user } } }, id: itemId },
             });
             if (!item) {
-              return redirect('/');
+              return '/';
             }
             await prisma.item.updateMany({
               where: { listId: item.listId, id: itemId },
               data: { title, checked, note },
             });
-            return redirect(`/lists/${item.listId}`);
+            return `/lists/${item.listId}`;
           })
           .delete(async () => {
             const item = await prisma.item.findFirst({
@@ -42,12 +42,12 @@ export const action: ActionFunction = async ({
               where: { list: { users: { some: { user } } }, id: itemId },
             });
             if (!item) {
-              return redirect('/');
+              return '/';
             }
             await prisma.item.deleteMany({
               where: { listId: item.listId, id: itemId },
             });
-            return redirect(`/lists/${item.listId}`);
+            return `/lists/${item.listId}`;
           })
           .error(async () => {
             const item = await prisma.item.findFirst({
@@ -55,9 +55,9 @@ export const action: ActionFunction = async ({
               where: { list: { users: { some: { user } } }, id: itemId },
             });
             if (!item) {
-              return redirect('/');
+              return '/';
             }
-            return redirect(`/lists/${item.listId}`);
+            return `/lists/${item.listId}`;
           })
       )
     )

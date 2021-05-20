@@ -1,5 +1,5 @@
 import type { MetaFunction, LoaderFunction, ActionFunction } from 'remix';
-import { useRouteData, redirect, Link, useSubmit } from 'remix';
+import { useRouteData, Link, useSubmit } from 'remix';
 import { TrashIcon, ShareIcon } from '@heroicons/react/outline';
 import { Tooltip } from '@reach/tooltip';
 import * as Yup from 'yup';
@@ -38,11 +38,11 @@ export const action: ActionFunction = ({ request }) =>
               },
             });
 
-            return redirect('/');
+            return '/';
           })
           .error((error) => {
             session.flash('error', error);
-            return redirect('/');
+            return '/';
           })
       )
     )
