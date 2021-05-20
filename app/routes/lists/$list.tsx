@@ -12,6 +12,7 @@ import { withSession, requireUser } from '../../sessions';
 import { withBody } from '../../withBody';
 import { prisma, List, Item } from '../../db';
 import { autocompleteAddTerm } from '../../lib/autocomplete.server';
+import { getList } from '../../loaders';
 
 import { ListTitle } from '../../components/ListTitle';
 import { AddItemCombobox } from '../../components/AddItemCombobox';
@@ -67,25 +68,10 @@ export const meta: MetaFunction = ({ data }: { data: RouteData }) => {
 
 export const loader: LoaderFunction = ({ request, params: { list: listId } }) =>
   withSession(request, (session) =>
-    requireUser(session, async (user): Promise<RouteData | Response> => {
-      const list = await prisma.list.findFirst({
-        where: { id: listId },
-        include: {
-          users: { select: { userId: true } },
-          items: { orderBy: { createdAt: 'desc' } },
-        },
-      });
-      if (!list) {
-        return redirect('/');
-      }
-      const userIds = list.users.map(({ userId }) => userId);
-      if (!userIds.includes(user.id)) {
-        await prisma.userList.create({
-          data: { userId: user.id, listId: list.id },
-        });
-      }
-      return list;
-    })
+    requireUser(
+      session,
+      async (user): Promise<RouteData | Response> => getList(listId, user)
+    )
   );
 
 export const action: ActionFunction = async ({

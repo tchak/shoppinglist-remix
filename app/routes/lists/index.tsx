@@ -7,6 +7,7 @@ import * as Yup from 'yup';
 import { withSession, requireUser } from '../../sessions';
 import { withBody } from '../../withBody';
 import { prisma, List } from '../../db';
+import { getLists } from '../../loaders';
 
 type RouteData = (List & { isShared: boolean })[];
 
@@ -20,16 +21,7 @@ export const meta: MetaFunction = ({ data }) => {
 
 export const loader: LoaderFunction = ({ request }) =>
   withSession(request, (session) =>
-    requireUser(session, async (user): Promise<RouteData> => {
-      const lists = await prisma.list.findMany({
-        where: { users: { some: { user } } },
-        orderBy: { createdAt: 'desc' },
-      });
-      return lists.map((list) => ({
-        ...list,
-        isShared: list.userId != user.id,
-      }));
-    })
+    requireUser(session, async (user): Promise<RouteData> => getLists(user))
   );
 
 export const action: ActionFunction = ({ request }) =>
