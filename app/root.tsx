@@ -16,7 +16,7 @@ import {
 } from 'remix';
 import { withProfiler } from '@sentry/react';
 import { IntlProvider } from 'react-intl';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Outlet } from 'react-router-dom';
 import { XCircleIcon } from '@heroicons/react/solid';
 
 import stylesUrl from './styles/index.css';
@@ -24,8 +24,7 @@ import stylesUrl from './styles/index.css';
 import { withLocale } from './sessions';
 import { getIntlMessages, DEFAULT_LOCALE } from './intl';
 
-import { ApplicationLayout } from './components/ApplicationLayout';
-import { AuthenticationLayout } from './components/AuthenticationLayout';
+import { ApplicationOutlet } from './components/ApplicationOutlet';
 import { Progress } from './components/Progress';
 
 type RouteData = {
@@ -150,7 +149,7 @@ export function App() {
   return (
     <Document pendingLocation={!!pendingLocation} locale={locale} ENV={ENV}>
       <IntlProvider locale={locale} messages={messages}>
-        {noLayout ? <AuthenticationLayout /> : <ApplicationLayout />}
+        {noLayout ? <Outlet /> : <ApplicationOutlet />}
       </IntlProvider>
     </Document>
   );

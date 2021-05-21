@@ -6,20 +6,20 @@ import { Tooltip } from '@reach/tooltip';
 import { getListsLoader, GetListsData as RouteData } from '../../loaders';
 import { listsActions } from '../../actions';
 
-export const meta: MetaFunction = ({ data }) => {
-  return { title: `Shoppinglist (${data.length})` };
+export const meta: MetaFunction = ({ data }: { data: RouteData }) => {
+  return { title: `Shoppinglist (${data.lists.length})` };
 };
 
 export const loader: LoaderFunction = (params) => getListsLoader(params);
 export const action: ActionFunction = (params) => listsActions(params);
 
 export default function ListsIndexRoute() {
-  const data = useRouteData<RouteData>();
+  const { lists } = useRouteData<RouteData>();
   const pendingForm = usePendingFormSubmit();
 
   return (
     <ul className="divide-y divide-gray-200">
-      {data.map((list) => (
+      {lists.map((list) => (
         <li key={list.id} className="group py-4 flex">
           <div className="ml-3 flex-grow">
             <div className="text-sm font-medium text-gray-900">

@@ -15,26 +15,37 @@ import { ItemDetailDialog } from '../../components/ItemDetailDialog';
 import { useRefetchOnWindowFocus } from '../_refetch';
 
 export const meta: MetaFunction = ({ data }: { data: RouteData }) => {
-  return { title: data.title };
+  return { title: data.list.title };
 };
 
 export const loader: LoaderFunction = (params) => getListLoader(params);
 export const action: ActionFunction = (params) => listActions(params);
 
 export default function ListsShowRoute() {
-  const data = useRouteData<RouteData>();
+  const { list } = useRouteData<RouteData>();
   useRefetchOnWindowFocus();
 
-  const { addItem, toggleItem, deleteItem } = useItemMutations();
+  const submit = useSubmit();
+  const toggleItem = (id: string, checked: boolean) =>
+    submit(
+      { checked: checked == true ? 'true' : 'false' },
+      { action: `/items/${id}`, replace: true, method: 'put' }
+    );
+  const deleteItem = (id: string) =>
+    submit({}, { action: `/items/${id}`, replace: true, method: 'delete' });
 
-  const [item, onOpen, onClose] = useItem(data.items);
-  const items = data.items.filter(({ checked }) => !checked);
-  const checkedItems = data.items.filter(({ checked }) => checked);
+  const [item, onOpen, onClose] = useItem(list.items);
+  const items = list.items.filter(({ checked }) => !checked);
+  const checkedItems = list.items.filter(({ checked }) => checked);
 
   return (
     <div>
-      <ListTitle list={data} />
-      <AddItemCombobox onSelect={(title) => addItem(title)} />
+      <ListTitle list={list} />
+      <AddItemCombobox
+        onSelect={(title) =>
+          submit({ title }, { replace: true, method: 'post' })
+        }
+      />
 
       <ActiveItemsList
         items={items}
@@ -56,8 +67,8 @@ export default function ListsShowRoute() {
 }
 
 function useItem(
-  items: RouteData['items']
-): [RouteData['items'][0] | null, (id: string) => void, () => void] {
+  items: RouteData['list']['items']
+): [RouteData['list']['items'][0] | null, (id: string) => void, () => void] {
   const [itemId, setItemId] = useState<string>();
   const item = useMemo(
     () => items.find((item) => item.id == itemId) ?? null,
@@ -67,20 +78,4 @@ function useItem(
   const close = () => setItemId(undefined);
 
   return [item, open, close];
-}
-
-function useItemMutations() {
-  const submit = useSubmit();
-
-  const addItem = (title: string) =>
-    submit({ title }, { replace: true, method: 'post' });
-  const toggleItem = (id: string, checked: boolean) =>
-    submit(
-      { checked: checked == true ? 'true' : 'false' },
-      { action: `/items/${id}`, replace: true, method: 'put' }
-    );
-  const deleteItem = (id: string) =>
-    submit({}, { action: `/items/${id}`, replace: true, method: 'delete' });
-
-  return { addItem, toggleItem, deleteItem };
 }

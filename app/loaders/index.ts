@@ -1,5 +1,6 @@
-import type { LoaderFunction } from 'remix';
+import type { LoaderFunction, Session } from 'remix';
 import { json } from 'remix';
+import type { ValidationError } from 'yup';
 
 import { prisma, User } from '../db';
 import { withSession, requireUser } from '../sessions';
@@ -9,21 +10,14 @@ type Await<T> = T extends PromiseLike<infer U> ? U : T;
 export type GetListData = NonNullable<Await<ReturnType<typeof getList>>>;
 export type GetListsData = Await<ReturnType<typeof getLists>>;
 
+export * from './auth';
+
 export const getListsLoader: LoaderFunction = ({ request }) =>
   withSession(request, (session) =>
-    requireUser(session, async (user) => getLists(user))
+    requireUser(session, async (user) => {
+      return getLists(user, session);
+    })
   );
-
-async function getLists(user: Pick<User, 'id'>) {
-  const lists = await prisma.list.findMany({
-    where: { users: { some: { user } } },
-    orderBy: { createdAt: 'desc' },
-  });
-  return lists.map((list) => ({
-    ...list,
-    isShared: list.userId != user.id,
-  }));
-}
 
 export const getListLoader: LoaderFunction = ({
   request,
@@ -31,33 +25,13 @@ export const getListLoader: LoaderFunction = ({
 }) =>
   withSession(request, (session) =>
     requireUser(session, async (user) => {
-      const list = getList(id, user);
+      const list = getList(id, user, session);
       if (list) {
         return list;
       }
       return '/';
     })
   );
-
-async function getList(id: string, user: Pick<User, 'id'>) {
-  const list = await prisma.list.findFirst({
-    where: { id },
-    include: {
-      users: { select: { userId: true } },
-      items: { orderBy: { createdAt: 'desc' } },
-    },
-  });
-  if (!list) {
-    return null;
-  }
-  const userIds = list.users.map(({ userId }) => userId);
-  if (!userIds.includes(user.id)) {
-    await prisma.userList.create({
-      data: { userId: user.id, listId: list.id },
-    });
-  }
-  return list;
-}
 
 export const getItemsLoader: LoaderFunction = ({ request }) =>
   withSession(request, (session) =>
@@ -70,26 +44,44 @@ export const getItemsLoader: LoaderFunction = ({ request }) =>
     })
   );
 
-export const signUpLoader: LoaderFunction = ({ request }) =>
-  withSession(request, async (session) =>
-    requireUser(
-      session,
-      () => '/',
-      () => ({ error: session.get('error') })
-    )
-  );
-
-export const signInLoader: LoaderFunction = ({ request }) =>
-  withSession(request, async (session) =>
-    requireUser(
-      session,
-      () => '/',
-      () => ({ error: session.get('error') })
-    )
-  );
-
-export const signOutLoader: LoaderFunction = ({ request }) =>
-  withSession(request, (session) => {
-    session.unset('user');
-    return '/signin';
+async function getLists(user: Pick<User, 'id'>, session: Session) {
+  const lists = await prisma.list.findMany({
+    where: { users: { some: { user } } },
+    orderBy: { createdAt: 'desc' },
   });
+
+  const error = session.get('error') as ValidationError | null;
+
+  return {
+    lists: lists.map((list) => ({
+      ...list,
+      isShared: list.userId != user.id,
+    })),
+    error,
+  };
+}
+
+async function getList(id: string, user: Pick<User, 'id'>, session: Session) {
+  const list = await prisma.list.findFirst({
+    where: { id },
+    include: {
+      users: { select: { userId: true } },
+      items: { orderBy: { createdAt: 'desc' } },
+    },
+  });
+
+  if (!list) {
+    return null;
+  }
+
+  const userIds = list.users.map(({ userId }) => userId);
+  if (!userIds.includes(user.id)) {
+    await prisma.userList.create({
+      data: { userId: user.id, listId: list.id },
+    });
+  }
+
+  const error = session.get('error') as ValidationError | null;
+
+  return { list, error };
+}

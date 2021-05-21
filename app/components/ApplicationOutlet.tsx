@@ -3,7 +3,7 @@ import { Outlet } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 
-export function ApplicationLayout() {
+export function ApplicationOutlet() {
   return (
     <div className="bg-gray-200 h-full min-h-screen py-2">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

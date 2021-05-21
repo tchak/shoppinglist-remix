@@ -1,5 +1,5 @@
 import type { MetaFunction, LoaderFunction } from 'remix';
-import { redirect, Link } from 'remix';
+import { Link } from 'remix';
 import { FormattedMessage } from 'react-intl';
 
 import { withSession, requireUser } from '../sessions';
@@ -12,7 +12,7 @@ export const loader: LoaderFunction = ({ request }) =>
   withSession(request, (session) =>
     requireUser(
       session,
-      () => redirect('/lists'),
+      () => '/lists',
       () => null
     )
   );
