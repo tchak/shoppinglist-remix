@@ -3,6 +3,7 @@ import type { MetaFunction, LoaderFunction, ActionFunction } from 'remix';
 import { useRouteData, useSubmit } from 'remix';
 import { useDebouncedCallback } from 'use-debounce';
 import ms from 'ms';
+import fetchRetry from 'fetch-retry';
 
 import { getListLoader, GetListData as RouteData } from '../../loaders';
 import { listActions } from '../../actions';
@@ -103,17 +104,19 @@ function useItems(list: RouteData['list']) {
       submit({ title }, { replace: true, method: 'post' }),
     toggleItem: (id: string, checked: boolean) => {
       const body = new URLSearchParams({ checked: String(checked) });
-      fetchItem(id, 'put', body).then(() => refetch());
+      fetchItem(id, 'put', body).finally(() => refetch());
       setItems((items) =>
         items.map((item) => (item.id == id ? { ...item, checked } : item))
       );
     },
     deleteItem: (id: string) => {
-      fetchItem(id, 'delete').then(() => refetch());
+      fetchItem(id, 'delete').finally(() => refetch());
       setItems((items) => items.filter((item) => item.id != id));
     },
   };
 }
+
+const fetchWithRetry = fetchRetry(fetch);
 
 function fetchItem(
   id: string,
@@ -122,13 +125,10 @@ function fetchItem(
 ) {
   const url = new URL(`/items/${id}`, location.toString());
   url.searchParams.set('_data', 'routes/items/$item');
-  return new Promise((resolve) => {
-    fetch(url.toString(), { method, body })
-      .then((response) => {
-        if (response.ok) {
-          resolve(response);
-        }
-      })
-      .catch(() => {});
+  return fetchWithRetry(url.toString(), {
+    method,
+    body,
+    retries: 3,
+    retryDelay: (attempt) => Math.pow(2, attempt) * 1000,
   });
 }

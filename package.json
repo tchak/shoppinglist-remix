@@ -40,6 +40,7 @@
     "@sentry/tracing": "^6.3.6",
     "@tanem/react-nprogress": "^3.0.66",
     "argon2": "^0.27.2",
+    "fetch-retry": "^4.1.1",
     "fuse.js": "^6.4.6",
     "is-hotkey": "^0.2.0",
     "lru-cache": "^6.0.0",
