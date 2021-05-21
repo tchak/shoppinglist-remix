@@ -141,7 +141,7 @@ function Document({
 }
 
 export function App() {
-  useTemporaryScrollManagement();
+  // useTemporaryScrollManagement();
   const pendingLocation = usePendingLocation();
   const { locale, ENV, messages } = useRouteData<RouteData>();
   const noLayout = useMatches().some(({ handle }) => handle?.layout == false);
