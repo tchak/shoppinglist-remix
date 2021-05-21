@@ -2,67 +2,72 @@ import { useCallback, useState } from 'react';
 import { PencilIcon } from '@heroicons/react/outline';
 import { isHotkey } from 'is-hotkey';
 import { FormattedMessage } from 'react-intl';
+import { usePendingFormSubmit, useSubmit } from 'remix';
 
 const isEnterKey = isHotkey('enter');
 const isEscKey = isHotkey('esc');
 
-export function ListTitle({
-  title,
-  onChange,
-}: {
-  title: string;
-  onChange: (title: string) => void;
-}) {
-  const [value, setValue] = useState(title);
+export function ListTitle({ list }: { list: { id: string; title: string } }) {
+  const submit = useSubmit();
+  const pendingForm = usePendingFormSubmit();
   const [isEditing, setIsEditing] = useState(false);
-  const open = () => setIsEditing(true);
-  const close = useCallback(
+
+  const action = `/lists/${list.id}`;
+  const title = (pendingForm?.data.get('title') as string) ?? list.title;
+  const onClick = () => setIsEditing(true);
+  const onSubmit = useCallback(
     (value: string) => {
+      if (title != value) {
+        submit(
+          { title: value },
+          {
+            action,
+            method: 'put',
+            replace: true,
+          }
+        );
+      }
       setIsEditing(false);
-      onChange(value);
     },
-    [onChange]
+    [submit, action, title]
   );
 
-  if (isEditing) {
+  if (isEditing && !pendingForm) {
     return (
-      <h3>
+      <div>
         <label htmlFor="list-title" className="sr-only">
           <FormattedMessage defaultMessage="List title" id="EthAB9" />
         </label>
         <input
           id="list-title"
-          name="list-title"
+          name="title"
           type="text"
-          className="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md"
-          value={value}
+          className="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full text-lg font-semibold border-gray-300 rounded-md"
+          defaultValue={title}
           autoFocus={true}
-          onChange={({ currentTarget: { value } }) => {
-            setValue(value);
-          }}
-          onBlur={({ currentTarget: { value } }) => close(value)}
+          onBlur={({ currentTarget: { value } }) => onSubmit(value)}
           onKeyDown={({ nativeEvent, currentTarget: { value } }) => {
             if (isEnterKey(nativeEvent) || isEscKey(nativeEvent)) {
-              close(value);
+              onSubmit(value);
             }
           }}
         />
-      </h3>
+      </div>
     );
   }
 
   return (
     <div>
-      <h3 className="group flex">
+      <h3 className="group flex py-2 pl-3">
         <div
           className="flex items-center flex-grow text-lg font-semibold"
-          onDoubleClick={open}
+          onDoubleClick={onClick}
         >
           {title}
         </div>
         <button
           className="px-3 opacity-0 group-hover:opacity-100 transition duration-200 ease-in-out"
-          onClick={open}
+          onClick={onClick}
         >
           <PencilIcon className="hover:text-green-500 h-5 w-5" />
         </button>

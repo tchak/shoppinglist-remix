@@ -25,8 +25,7 @@ export default function ListsShowRoute() {
   const data = useRouteData<RouteData>();
   useRefetchOnWindowFocus();
 
-  const { updateListTitle, addItem, toggleItem, deleteItem } =
-    useListMutations();
+  const { addItem, toggleItem, deleteItem } = useItemMutations();
 
   const [item, onOpen, onClose] = useItem(data.items);
   const items = data.items.filter(({ checked }) => !checked);
@@ -34,11 +33,7 @@ export default function ListsShowRoute() {
 
   return (
     <div>
-      <ListTitle
-        title={data.title}
-        onChange={(title) => updateListTitle(title)}
-      />
-
+      <ListTitle list={data} />
       <AddItemCombobox onSelect={(title) => addItem(title)} />
 
       <ActiveItemsList
@@ -74,11 +69,9 @@ function useItem(
   return [item, open, close];
 }
 
-function useListMutations() {
+function useItemMutations() {
   const submit = useSubmit();
 
-  const updateListTitle = (title: string) =>
-    submit({ title }, { replace: true, method: 'put' });
   const addItem = (title: string) =>
     submit({ title }, { replace: true, method: 'post' });
   const toggleItem = (id: string, checked: boolean) =>
@@ -89,10 +82,5 @@ function useListMutations() {
   const deleteItem = (id: string) =>
     submit({}, { action: `/items/${id}`, replace: true, method: 'delete' });
 
-  return {
-    updateListTitle,
-    addItem,
-    toggleItem,
-    deleteItem,
-  };
+  return { addItem, toggleItem, deleteItem };
 }
