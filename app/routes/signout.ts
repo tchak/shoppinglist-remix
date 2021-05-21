@@ -1,13 +1,8 @@
 import type { LoaderFunction } from 'remix';
-import { redirect } from 'remix';
 
-import { withSession } from '../sessions';
+import { signOutLoader } from '../loaders';
 
-export const loader: LoaderFunction = ({ request }) =>
-  withSession(request, (session) => {
-    session.unset('user');
-    return redirect('/signin');
-  });
+export const loader: LoaderFunction = (params) => signOutLoader(params);
 
 export default function SignOutRoute() {
   return null;

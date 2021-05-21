@@ -7,19 +7,19 @@ export const loader: LoaderFunction = () => redirect('/');
 
 export const action: ActionFunction = async ({ request }) => {
   const body = new URLSearchParams(await request.text());
-  return redirect(String(body.get('path')));
+  return redirect(String(body.get('redirectTo')));
 };
 
 export default function RefetchRoute() {
   return null;
 }
 
-export function useRefetch(path?: string) {
+export function useRefetch(redirectTo?: string) {
   const location = useLocation();
   const submit = useSubmit();
   return () =>
     submit(
-      { path: path ?? location.pathname },
+      { redirectTo: redirectTo ?? location.pathname },
       { method: 'post', action: '/_refetch', replace: true }
     );
 }

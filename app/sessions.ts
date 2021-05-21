@@ -3,7 +3,7 @@ import { Response, createCookieSessionStorage, json, redirect } from 'remix';
 import { DateTime } from 'luxon';
 
 import { prisma, User } from './db';
-import { getLocale } from './lib/intl';
+import { getLocale } from './intl';
 
 export const { getSession, commitSession, destroySession } =
   createCookieSessionStorage({
@@ -34,7 +34,9 @@ export async function withSession(
   let response = await next(session);
 
   // if they returned a plain object, turn it into a response
-  if (!(response instanceof Response)) {
+  if (typeof response == 'string') {
+    response = redirect(response);
+  } else if (!(response instanceof Response)) {
     response = json(response);
   }
 
@@ -46,9 +48,10 @@ export async function withSession(
 
 export async function withLocale(request: Request, next: NextFunction<string>) {
   const session = await getSession(request.headers.get('cookie'));
-  const locale = getLocale(request.headers.get('accept-language'));
+  const locale =
+    session.get('locale') || getLocale(request.headers.get('accept-language'));
 
-  return next(session.get('locale') ?? locale);
+  return next(locale);
 }
 
 export async function requireUser(

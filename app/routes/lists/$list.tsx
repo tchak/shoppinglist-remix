@@ -1,18 +1,9 @@
-import { useState } from 'react';
-import type {
-  MetaFunction,
-  LoaderFunction,
-  ActionFunction,
-  Response,
-} from 'remix';
+import { useState, useMemo } from 'react';
+import type { MetaFunction, LoaderFunction, ActionFunction } from 'remix';
 import { useRouteData, useSubmit } from 'remix';
-import * as Yup from 'yup';
 
-import { withSession, requireUser } from '../../sessions';
-import { withBody } from '../../withBody';
-import { prisma, List, Item } from '../../db';
-import { autocompleteAddTerm } from '../../lib/autocomplete.server';
-import { getList } from '../../loaders';
+import { getListLoader, GetListData as RouteData } from '../../loaders';
+import { listActions } from '../../actions';
 
 import { ListTitle } from '../../components/ListTitle';
 import { AddItemCombobox } from '../../components/AddItemCombobox';
@@ -23,132 +14,28 @@ import {
 import { ItemDetailDialog } from '../../components/ItemDetailDialog';
 import { useRefetchOnWindowFocus } from '../_refetch';
 
-type RouteData = List & { items: Item[] };
-
-const createItemSchema = Yup.object().shape({
-  title: Yup.string().required(),
-});
-
-const updateListSchema = Yup.object().shape({
-  title: Yup.string().required(),
-});
-
-function useListMutations() {
-  const submit = useSubmit();
-
-  const updateListTitle = (title: string) =>
-    submit({ title }, { replace: true, method: 'put' });
-  const updateItemTitle = (id: string, title: string) =>
-    submit({ title }, { action: `/items/${id}`, replace: true, method: 'put' });
-  const updateItemNote = (id: string, note: string) =>
-    submit({ note }, { action: `/items/${id}`, replace: true, method: 'put' });
-  const addItem = (title: string) =>
-    submit({ title }, { replace: true, method: 'post' });
-  const toggleItem = (id: string, checked: boolean) =>
-    submit(
-      { checked: checked == true ? 'true' : 'false' },
-      { action: `/items/${id}`, replace: true, method: 'put' }
-    );
-  const deleteItem = (id: string) =>
-    submit({}, { action: `/items/${id}`, replace: true, method: 'delete' });
-
-  return {
-    updateListTitle,
-    updateItemTitle,
-    updateItemNote,
-    addItem,
-    toggleItem,
-    deleteItem,
-  };
-}
-
 export const meta: MetaFunction = ({ data }: { data: RouteData }) => {
   return { title: data.title };
 };
 
-export const loader: LoaderFunction = ({ request, params: { list: listId } }) =>
-  withSession(request, (session) =>
-    requireUser(
-      session,
-      async (user): Promise<RouteData | Response> => getList(listId, user)
-    )
-  );
-
-export const action: ActionFunction = async ({
-  request,
-  params: { list: listId },
-}) =>
-  withSession(request, (session) =>
-    requireUser(session, (user) =>
-      withBody(request, (router) =>
-        router
-          .post(createItemSchema, async ({ title }) => {
-            const list = await prisma.list.findFirst({
-              where: { id: listId, users: { some: { user } } },
-              select: { id: true, users: { select: { userId: true } } },
-            });
-            if (!list) {
-              return '/';
-            }
-            await prisma.item.create({
-              data: { list: { connect: { id: listId } }, title },
-            });
-            for (const userId of list.users.map(({ userId }) => userId)) {
-              await autocompleteAddTerm(title, userId);
-            }
-
-            return `/lists/${listId}`;
-          })
-          .put(updateListSchema, async ({ title }) => {
-            await prisma.list.updateMany({
-              where: { id: listId, users: { some: { user } } },
-              data: { title },
-            });
-            return `/lists/${listId}`;
-          })
-          .delete(async () => {
-            await prisma.$transaction([
-              prisma.userList.deleteMany({
-                where: { list: { id: listId, user } },
-              }),
-              prisma.item.deleteMany({
-                where: { list: { id: listId, user } },
-              }),
-              prisma.list.deleteMany({ where: { id: listId, user } }),
-            ]);
-            return '/lists';
-          })
-          .error((error) => {
-            session.flash('error', error);
-            return `/lists/${listId}`;
-          })
-      )
-    )
-  );
+export const loader: LoaderFunction = (params) => getListLoader(params);
+export const action: ActionFunction = (params) => listActions(params);
 
 export default function ListsShowRoute() {
-  const [openItem, setOpenItem] = useState<Item | undefined>();
-  const list = useRouteData<RouteData>();
-  const {
-    updateListTitle,
-    updateItemTitle,
-    updateItemNote,
-    addItem,
-    toggleItem,
-    deleteItem,
-  } = useListMutations();
+  const data = useRouteData<RouteData>();
   useRefetchOnWindowFocus();
 
-  const onOpen = (id: string) =>
-    setOpenItem(list.items.find((item) => item.id == id));
-  const onClose = () => setOpenItem(undefined);
-  const items = list.items.filter(({ checked }) => !checked);
-  const checkedItems = list.items.filter(({ checked }) => checked);
+  const { updateListTitle, addItem, toggleItem, deleteItem } =
+    useListMutations();
+
+  const [item, onOpen, onClose] = useItem(data.items);
+  const items = data.items.filter(({ checked }) => !checked);
+  const checkedItems = data.items.filter(({ checked }) => checked);
 
   return (
     <div>
       <ListTitle
-        title={list.title}
+        title={data.title}
         onChange={(title) => updateListTitle(title)}
       />
 
@@ -168,14 +55,44 @@ export default function ListsShowRoute() {
         onOpen={onOpen}
       />
 
-      {openItem && (
-        <ItemDetailDialog
-          item={openItem}
-          onChangeTitle={(title: string) => updateItemTitle(openItem.id, title)}
-          onChangeNote={(note: string) => updateItemNote(openItem.id, note)}
-          onDismiss={onClose}
-        />
-      )}
+      {item && <ItemDetailDialog item={item} onDismiss={onClose} />}
     </div>
   );
+}
+
+function useItem(
+  items: RouteData['items']
+): [RouteData['items'][0] | null, (id: string) => void, () => void] {
+  const [itemId, setItemId] = useState<string>();
+  const item = useMemo(
+    () => items.find((item) => item.id == itemId) ?? null,
+    [itemId, items]
+  );
+  const open = (id: string) => setItemId(id);
+  const close = () => setItemId(undefined);
+
+  return [item, open, close];
+}
+
+function useListMutations() {
+  const submit = useSubmit();
+
+  const updateListTitle = (title: string) =>
+    submit({ title }, { replace: true, method: 'put' });
+  const addItem = (title: string) =>
+    submit({ title }, { replace: true, method: 'post' });
+  const toggleItem = (id: string, checked: boolean) =>
+    submit(
+      { checked: checked == true ? 'true' : 'false' },
+      { action: `/items/${id}`, replace: true, method: 'put' }
+    );
+  const deleteItem = (id: string) =>
+    submit({}, { action: `/items/${id}`, replace: true, method: 'delete' });
+
+  return {
+    updateListTitle,
+    addItem,
+    toggleItem,
+    deleteItem,
+  };
 }

@@ -1,62 +1,25 @@
 import type { MetaFunction, LoaderFunction, ActionFunction } from 'remix';
-import { useRouteData, Link, useSubmit } from 'remix';
+import { useRouteData, Link, Form, usePendingFormSubmit } from 'remix';
 import { TrashIcon, ShareIcon } from '@heroicons/react/outline';
 import { Tooltip } from '@reach/tooltip';
-import * as Yup from 'yup';
 
-import { withSession, requireUser } from '../../sessions';
-import { withBody } from '../../withBody';
-import { prisma, List } from '../../db';
-import { getLists } from '../../loaders';
-
-type RouteData = (List & { isShared: boolean })[];
-
-const createListSchema = Yup.object().shape({
-  title: Yup.string().required(),
-});
+import { getListsLoader, GetListsData as RouteData } from '../../loaders';
+import { listsActions } from '../../actions';
 
 export const meta: MetaFunction = ({ data }) => {
   return { title: `Shoppinglist (${data.length})` };
 };
 
-export const loader: LoaderFunction = ({ request }) =>
-  withSession(request, (session) =>
-    requireUser(session, async (user): Promise<RouteData> => getLists(user))
-  );
-
-export const action: ActionFunction = ({ request }) =>
-  withSession(request, (session) =>
-    requireUser(session, (user) =>
-      withBody(request, (router) =>
-        router
-          .post(createListSchema, async ({ title }) => {
-            await prisma.list.create({
-              data: {
-                userId: user.id,
-                users: { create: { userId: user.id } },
-                title,
-              },
-            });
-
-            return '/';
-          })
-          .error((error) => {
-            session.flash('error', error);
-            return '/';
-          })
-      )
-    )
-  );
+export const loader: LoaderFunction = (params) => getListsLoader(params);
+export const action: ActionFunction = (params) => listsActions(params);
 
 export default function ListsIndexRoute() {
-  const lists = useRouteData<RouteData>();
-  const submit = useSubmit();
-  const deleteList = (id: string) =>
-    submit({}, { action: `/lists/${id}`, method: 'delete', replace: true });
+  const data = useRouteData<RouteData>();
+  const pendingForm = usePendingFormSubmit();
 
   return (
     <ul className="divide-y divide-gray-200">
-      {lists.map((list) => (
+      {data.map((list) => (
         <li key={list.id} className="group py-4 flex">
           <div className="ml-3 flex-grow">
             <div className="text-sm font-medium text-gray-900">
@@ -76,14 +39,15 @@ export default function ListsIndexRoute() {
           </div>
           {!list.isShared && (
             <Tooltip label="Delete list">
-              <button
-                className="px-3 opacity-0 group-hover:opacity-100 transition duration-200 ease-in-out"
-                type="button"
-                data-list-item-control
-                onClick={() => deleteList(list.id)}
-              >
-                <TrashIcon className="hover:text-red-500 h-5 w-5" />
-              </button>
+              <Form action={`/lists/${list.id}`} method="delete" replace>
+                <button
+                  className="px-3 opacity-0 group-hover:opacity-100 transition duration-200 ease-in-out"
+                  type="submit"
+                  disabled={!!pendingForm}
+                >
+                  <TrashIcon className="hover:text-red-500 h-5 w-5" />
+                </button>
+              </Form>
             </Tooltip>
           )}
         </li>

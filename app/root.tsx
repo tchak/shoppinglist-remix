@@ -20,11 +20,13 @@ import { useLocation } from 'react-router-dom';
 import { XCircleIcon } from '@heroicons/react/solid';
 
 import stylesUrl from './styles/index.css';
+
+import { withLocale } from './sessions';
+import { getIntlMessages, DEFAULT_LOCALE } from './intl';
+
 import { ApplicationLayout } from './components/ApplicationLayout';
 import { AuthenticationLayout } from './components/AuthenticationLayout';
 import { Progress } from './components/Progress';
-import { withLocale } from './sessions';
-import { getIntlMessages, DEFAULT_LOCALE } from './lib/intl';
 
 type RouteData = {
   ENV: Record<string, string>;

@@ -4,29 +4,16 @@ import type {
   ActionFunction,
   RouteHandle,
 } from 'remix';
-import {
-  redirect,
-  Link,
-  Form,
-  useRouteData,
-  usePendingFormSubmit,
-} from 'remix';
+import { Link, Form, useRouteData, usePendingFormSubmit } from 'remix';
 import { LockClosedIcon, XCircleIcon } from '@heroicons/react/solid';
-import * as Yup from 'yup';
+import type { ValidationError } from 'yup';
 
-import { verify } from '../lib/argon2.server';
-import { withSession, requireUser } from '../sessions';
-import { prisma } from '../db';
-import { withBody } from '../withBody';
+import { signInLoader } from '../loaders';
+import { signInAction } from '../actions';
 
 type RouteData = {
-  error?: Yup.ValidationError;
+  error?: ValidationError;
 };
-
-const signInSchema = Yup.object().shape({
-  email: Yup.string().email().required(),
-  password: Yup.string().min(6).required(),
-});
 
 export const handle: RouteHandle = { layout: false };
 
@@ -36,47 +23,8 @@ export const meta: MetaFunction = () => {
   };
 };
 
-export const loader: LoaderFunction = ({ request }) =>
-  withSession(request, async (session) =>
-    requireUser(
-      session,
-      () => redirect('/'),
-      () => ({ error: session.get('error') })
-    )
-  );
-
-export const action: ActionFunction = ({ request }) =>
-  withSession(request, (session) =>
-    requireUser(
-      session,
-      () => '/',
-      () =>
-        withBody(request, (router) =>
-          router
-            .post(signInSchema, async ({ email, password }) => {
-              const user = await prisma.user.findUnique({
-                where: { email },
-              });
-
-              if (user && (await verify(user.password, password))) {
-                session.set('user', user.id);
-              } else {
-                throw new Yup.ValidationError('Wrong email or password', {
-                  email,
-                  password,
-                });
-              }
-
-              return '/';
-            })
-            .error((error) => {
-              session.flash('error', error);
-              session.unset('user');
-              return '/signin';
-            })
-        )
-    )
-  );
+export const loader: LoaderFunction = (params) => signInLoader(params);
+export const action: ActionFunction = (params) => signInAction(params);
 
 export default function SignInRoute() {
   const { error } = useRouteData<RouteData>();
@@ -165,9 +113,6 @@ function Errors({ message }: { message: string }) {
         </div>
         <div className="ml-3">
           <h3 className="text-sm font-medium text-red-800">{message}</h3>
-          {/* <div className="mt-2 text-sm text-red-700">
-            <ul className="list-disc pl-5 space-y-1"></ul>
-          </div> */}
         </div>
       </div>
     </div>
