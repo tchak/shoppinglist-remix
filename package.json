@@ -9,11 +9,11 @@
     "typecheck": "tsc -b app/tsconfig.json",
     "build": "run-s compile:i18n build:css build:remix",
     "clean": "rimraf ./node_modules/.cache ./build ./public/build \"./app/styles/**/*.css\"",
-    "dev": "concurrently \"yarn:watch:css\" \"yarn:start:dev\"",
+    "dev": "concurrently \"npm:watch:css\" \"npm:start:dev\"",
     "start": "remix-serve build",
     "start:dev": "remix run",
     "build:remix": "remix build",
-    "migrate": "yarn prisma migrate deploy",
+    "migrate": "prisma migrate deploy",
     "ts-node": "ts-node --compiler-options '{\"module\":\"CommonJS\"}'",
     "watch:css": "postcss styles --base styles --dir app/styles -w",
     "build:css": "postcss styles --base styles --dir app/styles --env production",
@@ -22,7 +22,7 @@
     "compile:i18n": "formatjs compile app/lang/en-GB.json --ast --out-file app/lang/compiled/en-GB.json",
     "test": "run-s typecheck lint",
     "scalingo-postbuild": "run-s test build migrate",
-    "prebuild": "yarn clean"
+    "prebuild": "npm run clean"
   },
   "dependencies": {
     "@headlessui/react": "^1.2.0",
