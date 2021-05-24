@@ -25,7 +25,13 @@ export default function ListsIndexRoute() {
             <div className="text-sm font-medium text-gray-900">
               <Link to={`${list.id}`}>
                 <div className="flex items-center">
-                  {list.title}
+                  <div>
+                    {list.title}{' '}
+                    <span className="text-xs text-gray-400">
+                      ({list.items.length})
+                    </span>
+                  </div>
+
                   {list.isShared && (
                     <Tooltip label="Shared list">
                       <span>

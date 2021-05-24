@@ -48,6 +48,9 @@ async function getLists(user: Pick<User, 'id'>, session: Session) {
   const lists = await prisma.list.findMany({
     where: { users: { some: { user } } },
     orderBy: { createdAt: 'desc' },
+    include: {
+      items: { where: { checked: false }, select: { checked: true } },
+    },
   });
 
   const error = session.get('error') as ValidationError | null;
