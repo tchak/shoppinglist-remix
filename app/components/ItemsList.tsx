@@ -15,6 +15,8 @@ import { animated, useSpring } from 'react-spring';
 import { useDrag } from 'react-use-gesture';
 import { FormattedMessage } from 'react-intl';
 import { Tooltip } from '@reach/tooltip';
+import Interweave from 'interweave';
+import { UrlMatcher } from 'interweave-autolink';
 
 import type { Item } from '../db';
 
@@ -119,7 +121,13 @@ function ListItem({
             >
               {title}
             </p>
-            <p className="text-sm text-gray-500">{note}</p>
+            <p className="text-sm text-gray-500">
+              <Interweave
+                content={note}
+                matchers={[new UrlMatcher('url', { customTLDs: ['dev'] })]}
+                newWindow={true}
+              />
+            </p>
           </div>
 
           <Tooltip label="Add note">

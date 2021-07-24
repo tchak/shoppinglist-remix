@@ -1,6 +1,9 @@
 import ReactDOMServer from 'react-dom/server';
 import type { EntryContext } from 'remix';
 import { RemixServer } from 'remix';
+import { polyfill } from 'interweave-ssr';
+
+polyfill();
 
 export default function handleRequest(
   request: Request,
