@@ -4,6 +4,6 @@ import { signOutLoader } from '../middlewares';
 
 export const loader: LoaderFunction = (r) => signOutLoader(r);
 
-export default function SignOutRoute() {
+export default function SignOutRouteComponent() {
   return null;
 }

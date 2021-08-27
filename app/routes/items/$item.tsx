@@ -6,6 +6,6 @@ import { itemActions } from '../../middlewares';
 export const loader: LoaderFunction = () => redirect('/');
 export const action: ActionFunction = (r) => itemActions(r);
 
-export default function ItemsShowRoute() {
+export default function Items$ItemRouteComponent() {
   return null;
 }

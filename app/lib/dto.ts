@@ -1,23 +1,51 @@
-import type { List, Item, User } from '@prisma/client';
 import type { These } from 'fp-ts/These';
 import type { Option } from 'fp-ts/Option';
-import type { DecodeError } from 'io-ts/Decoder';
 
-export type ListWithItems = List & {
-  items: Item[];
-  users: { userId: string }[];
-};
+import { pipe } from 'fp-ts/function';
+import * as D from 'io-ts/Decoder';
 
-export type SharedList = List & {
-  isShared: boolean;
-  itemsCount: number;
-};
+import { these } from './shared';
 
-export type { List, Item, User };
+const item = D.struct({
+  id: D.string,
+  title: D.string,
+  checked: D.boolean,
+  note: pipe(D.string, D.nullable),
+});
+
+const list = D.struct({
+  id: D.string,
+  title: D.string,
+});
+
+export const sharedLists = D.array(
+  pipe(
+    list,
+    D.intersect(
+      D.struct({
+        isShared: D.boolean,
+        itemsCount: D.number,
+      })
+    )
+  )
+);
+
+export const listWithItems = pipe(
+  list,
+  D.intersect(
+    D.struct({
+      items: D.array(item),
+    })
+  )
+);
+
+export const sharedListsEither = these(D.string, sharedLists);
+export const listWithItemsEither = these(D.string, listWithItems);
+
+export type Item = D.TypeOf<typeof item>;
+export type ListWithItems = D.TypeOf<typeof listWithItems>;
+export type SharedLists = D.TypeOf<typeof sharedLists>;
 
 type CredentialsDTO = { email: string; password: string };
-export type SignInDTO = These<DecodeError, Option<CredentialsDTO>>;
-export type SignUpDTO = These<DecodeError, Option<CredentialsDTO>>;
-
-export type SharedListsDTO = These<never, SharedList[]>;
-export type ListDTO = These<never, ListWithItems>;
+export type SignInDTO = These<D.DecodeError, Option<CredentialsDTO>>;
+export type SignUpDTO = These<D.DecodeError, Option<CredentialsDTO>>;

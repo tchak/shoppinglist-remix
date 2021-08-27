@@ -1,22 +1,24 @@
-import type { LoaderFunction, ActionFunction } from 'remix';
-import { useLoaderData, Link, Form, useTransition } from 'remix';
+import type { LoaderFunction, ActionFunction, MetaFunction } from 'remix';
+import { Link, Form, useTransition } from 'remix';
 import { TrashIcon, ShareIcon } from '@heroicons/react/outline';
 import { Tooltip } from '@reach/tooltip';
 
 import { pipe } from 'fp-ts/function';
-import { fold } from 'fp-ts/These';
+import * as TH from 'fp-ts/These';
 
-import type { MetaFunction } from '../../lib/remix';
-import type { SharedListsDTO, SharedList } from '../../lib/dto';
+import { SharedLists, sharedListsEither } from '../../lib/dto';
 import { getListsLoader, listsActions } from '../../middlewares';
-import { foldBoth } from '../../lib/shared';
+import { decodeRouteData, useRouteData } from '../../hooks/useRouteData';
 
-export const meta: MetaFunction<SharedListsDTO> = ({ data }) => {
+export const meta: MetaFunction = ({ data }) => {
   return {
-    title: foldBoth(
-      () => '',
-      (lists) => `Shoppinglist (${lists.length})`,
-      data
+    title: pipe(
+      decodeRouteData(sharedListsEither, data),
+      TH.match(
+        (error) => `Error ${error}`,
+        (lists) => `Shoppinglist (${lists.length})`,
+        (_, lists) => `Shoppinglist (${lists.length})`
+      )
     ),
   };
 };
@@ -24,20 +26,18 @@ export const meta: MetaFunction<SharedListsDTO> = ({ data }) => {
 export const loader: LoaderFunction = (r) => getListsLoader(r);
 export const action: ActionFunction = (r) => listsActions(r);
 
-export default function ListsIndexRoute() {
-  const lists = useLoaderData<SharedListsDTO>();
-
+export default function ListsIndexRouteComponent() {
   return pipe(
-    lists,
-    fold(
-      () => <Lists lists={[]} />,
-      (lists) => <Lists lists={lists} />,
-      (_, lists) => <Lists lists={lists} />
+    useRouteData(sharedListsEither),
+    TH.match(
+      () => <SharedListsComponent lists={[]} />,
+      (lists) => <SharedListsComponent lists={lists} />,
+      (_, lists) => <SharedListsComponent lists={lists} />
     )
   );
 }
 
-function Lists({ lists }: { lists: SharedList[] }) {
+function SharedListsComponent({ lists }: { lists: SharedLists }) {
   const transition = useTransition();
 
   return (

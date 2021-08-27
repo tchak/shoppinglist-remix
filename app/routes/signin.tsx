@@ -27,7 +27,7 @@ function useActionDataE(submissionKey?: string): SignInDTO {
   return data;
 }
 
-export default function SignInRoute() {
+export default function SignInRouteComponent() {
   const data = useActionDataE('signin');
   const transition = useTransition('signin');
 

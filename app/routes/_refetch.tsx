@@ -9,7 +9,7 @@ export const action: ActionFunction = async ({ request }) => {
   return redirect(String(body.get('redirectTo')));
 };
 
-export default function RefetchRoute() {
+export default function RefetchRouteComponent() {
   return null;
 }
 

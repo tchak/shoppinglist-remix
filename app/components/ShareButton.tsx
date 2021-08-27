@@ -5,7 +5,7 @@ import ms from 'ms';
 import { Tooltip } from '@reach/tooltip';
 import { useIntl } from 'react-intl';
 
-import { Notification } from './Notification';
+import { Notification } from '.';
 
 export function ShareButton() {
   const [isShared, { share, close }] = useShare();

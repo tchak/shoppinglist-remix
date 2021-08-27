@@ -3,8 +3,7 @@ import { NavLink, useMatch } from 'react-router-dom';
 import { ClipboardCheckIcon } from '@heroicons/react/outline';
 import { FormattedMessage } from 'react-intl';
 
-import { ClientOnly } from './ClientOnly';
-import { ShareButton } from './ShareButton';
+import { ClientOnly, ShareButton } from '.';
 
 export function Header() {
   return (

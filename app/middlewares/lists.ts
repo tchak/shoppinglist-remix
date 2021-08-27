@@ -2,9 +2,8 @@ import { pipe } from 'fp-ts/function';
 import * as TE from 'fp-ts/TaskEither';
 import * as M from 'hyper-ts/lib/Middleware';
 import * as D from 'io-ts/Decoder';
-import * as O from 'fp-ts/Option';
 
-import type { ListWithItems, SharedList } from '../lib/dto';
+import type { ListWithItems, SharedLists } from '../lib/dto';
 import { getUser } from '../lib/sessions';
 import { prisma, PrismaError } from '../lib/db';
 import { POST, PUT, DELETE, redirect, json, toHandler } from '../lib/hyper';
@@ -66,7 +65,10 @@ const deleteList = (user: { id: string }) =>
     M.map(() => '/lists')
   );
 
-function getList(id: string, user: { id: string }) {
+function getList(
+  id: string,
+  user: { id: string }
+): TE.TaskEither<string, ListWithItems> {
   return pipe(
     prisma((p) =>
       p.list.findFirst({
@@ -78,17 +80,12 @@ function getList(id: string, user: { id: string }) {
         },
       })
     ),
-    TE.chainFirst<PrismaError, ListWithItems, unknown>((list) =>
-      !hasUser(list, user.id)
-        ? prisma((p) =>
-            p.userList.create({ data: { userId: user.id, listId: list.id } })
-          )
-        : TE.right(O.none)
-    )
+    TE.mapLeft((error) => error.message),
+    TE.chainFirstTaskK((list) => assignListToUser(list, user.id))
   );
 }
 
-function getLists(user: { id: string }) {
+function getLists(user: { id: string }): TE.TaskEither<never, SharedLists> {
   return pipe(
     prisma((p) =>
       p.list.findMany({
@@ -106,12 +103,24 @@ function getLists(user: { id: string }) {
         itemsCount: list.items.length,
       }))
     ),
-    TE.orElse(() => TE.right<PrismaError, SharedList[]>([]))
+    TE.orElse(() => TE.right<never, SharedLists>([]))
   );
 }
 
-function hasUser(list: ListWithItems, userId: string): boolean {
+function hasUser(
+  list: { users: { userId: string }[] },
+  userId: string
+): boolean {
   return list.users.map(({ userId }) => userId).includes(userId);
+}
+
+function assignListToUser(
+  list: { id: string; users: { userId: string }[] },
+  userId: string
+): TE.TaskEither<PrismaError, { userId: string; listId: string } | true> {
+  return hasUser(list, userId)
+    ? TE.right<never, true>(true)
+    : prisma((p) => p.userList.create({ data: { userId, listId: list.id } }));
 }
 
 export const getListsLoader = pipe(
@@ -141,7 +150,7 @@ export const listsActions = pipe(
     )
   ),
   M.ichain((path) => redirect(path)),
-  M.orElse(() => redirect('/signup')),
+  M.orElse(() => redirect('/signin')),
   toHandler
 );
 
@@ -156,6 +165,6 @@ export const listActions = pipe(
     )
   ),
   M.ichain((path) => redirect(path)),
-  M.orElse(() => redirect('/signup')),
+  M.orElse(() => redirect('/signin')),
   toHandler
 );

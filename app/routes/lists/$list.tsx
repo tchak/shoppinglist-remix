@@ -1,37 +1,39 @@
-import type { LoaderFunction, ActionFunction } from 'remix';
+import type { LoaderFunction, ActionFunction, MetaFunction } from 'remix';
 import { useState, useMemo, useEffect } from 'react';
-import { useLoaderData, useSubmit } from 'remix';
+import { useSubmit } from 'remix';
 import { useDebouncedCallback } from 'use-debounce';
 import ms from 'ms';
 import fetchRetry from 'fetch-retry';
 
-import type { Task } from 'fp-ts/Task';
 import type { Option } from 'fp-ts/Option';
 import { pipe } from 'fp-ts/function';
-import { chain, fromIO } from 'fp-ts/Task';
-import { fold } from 'fp-ts/These';
-import { findFirst } from 'fp-ts/Array';
+import * as T from 'fp-ts/Task';
+import * as TH from 'fp-ts/These';
+import * as A from 'fp-ts/Array';
 
-import type { MetaFunction } from '../../lib/remix';
-import type { Item, ListWithItems, ListDTO } from '../../lib/dto';
+import { Item, ListWithItems, listWithItemsEither } from '../../lib/dto';
 import { getListLoader, listActions } from '../../middlewares';
-import { foldBoth, foldNullable } from '../../lib/shared';
+import { foldNullable } from '../../lib/shared';
+import { decodeRouteData, useRouteData } from '../../hooks/useRouteData';
 
-import { ListTitle } from '../../components/ListTitle';
-import { AddItemCombobox } from '../../components/AddItemCombobox';
 import {
+  ListTitle,
+  AddItemCombobox,
   ActiveItemsList,
   CheckedOffItemsList,
-} from '../../components/ItemsList';
-import { ItemDetailDialog } from '../../components/ItemDetailDialog';
+  ItemDetailDialog,
+} from '../../components';
 import { useRefetchOnWindowFocus, useRefetch } from '../_refetch';
 
-export const meta: MetaFunction<ListDTO> = ({ data }) => {
+export const meta: MetaFunction = ({ data }) => {
   return {
-    title: foldBoth(
-      () => '',
-      ({ title }) => title,
-      data
+    title: pipe(
+      decodeRouteData(listWithItemsEither, data),
+      TH.match(
+        () => '',
+        ({ title }) => title,
+        (_, { title }) => title
+      )
     ),
   };
 };
@@ -39,21 +41,19 @@ export const meta: MetaFunction<ListDTO> = ({ data }) => {
 export const loader: LoaderFunction = (r) => getListLoader(r);
 export const action: ActionFunction = (r) => listActions(r);
 
-export default function ListsShowRoute() {
+export default function Lists$ListRouteComponent() {
   useRefetchOnWindowFocus();
-  const list = useLoaderData<ListDTO>();
-
   return pipe(
-    list,
-    fold(
+    useRouteData(listWithItemsEither),
+    TH.match(
       () => <div>List not found</div>,
-      (list) => <ListItems list={list} />,
-      (_, list) => <ListItems list={list} />
+      (list) => <ListWithItemsComponent list={list} />,
+      (_, list) => <ListWithItemsComponent list={list} />
     )
   );
 }
 
-function ListItems({ list }: { list: ListWithItems }) {
+function ListWithItemsComponent({ list }: { list: ListWithItems }) {
   const {
     item,
     items,
@@ -109,7 +109,7 @@ function useSelectedItem(
     () =>
       pipe(
         items,
-        findFirst((item) => item.id == itemId)
+        A.findFirst((item) => item.id == itemId)
       ),
     [itemId, items]
   );
@@ -140,7 +140,7 @@ function useItems(list: ListWithItems) {
       const body = new URLSearchParams({ checked: String(checked) });
       pipe(
         fetchItem(id, 'put', body),
-        chain(() => fromIO(refetch))
+        T.chain(() => T.fromIO(refetch))
       )();
       setItems((items) =>
         items.map((item) => (item.id == id ? { ...item, checked } : item))
@@ -149,7 +149,7 @@ function useItems(list: ListWithItems) {
     deleteItem: (id: string) => {
       pipe(
         fetchItem(id, 'delete'),
-        chain(() => fromIO(refetch))
+        T.chain(() => T.fromIO(refetch))
       )();
       setItems((items) => items.filter((item) => item.id != id));
     },
@@ -162,7 +162,7 @@ function fetchItem(
   id: string,
   method: 'put' | 'delete',
   body?: URLSearchParams
-): Task<boolean> {
+): T.Task<boolean> {
   return () => {
     const url = new URL(`/items/${id}`, location.toString());
     url.searchParams.set('_data', 'routes/items/$item');

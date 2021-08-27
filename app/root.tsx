@@ -25,8 +25,7 @@ import { getIntlMessages, DEFAULT_LOCALE } from './lib/intl';
 import { useScrollRestoration } from './hooks/useScrollRestoration';
 import { toHandler, JSONError } from './lib/hyper';
 
-import { ApplicationOutlet } from './components/ApplicationOutlet';
-import { Progress } from './components/Progress';
+import { ApplicationOutlet, Progress } from './components';
 
 type RouteData = {
   ENV: Record<string, string>;

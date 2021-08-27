@@ -27,7 +27,7 @@ function useActionDataE(submissionKey?: string): SignUpDTO {
   return data;
 }
 
-export default function SignUpRoute() {
+export default function SignUpRouteComponent() {
   const data = useActionDataE('signup');
   const transition = useTransition('signup');
 
