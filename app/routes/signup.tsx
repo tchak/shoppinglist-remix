@@ -1,23 +1,35 @@
 import type {
-  MetaFunction,
+  RouteHandle,
   LoaderFunction,
   ActionFunction,
-  RouteHandle,
+  MetaFunction,
 } from 'remix';
-import { Link, Form, useRouteData, usePendingFormSubmit } from 'remix';
+import { Link, Form, useActionData, useTransition } from 'remix';
 import { UserIcon, XCircleIcon } from '@heroicons/react/solid';
+import { right } from 'fp-ts/Either';
+import { none, None } from 'fp-ts/Option';
+import * as D from 'io-ts/Decoder';
 
-import { signUpLoader, SignUpData as RouteData } from '../loaders';
-import { signUpAction } from '../actions';
+import type { SignUpDTO } from '../lib/dto';
+import { signUpLoader, signUpAction } from '../middlewares';
+import { foldError, foldDefaultValue } from '../lib/shared';
 
 export const handle: RouteHandle = { layout: false };
 export const meta: MetaFunction = () => ({ title: 'Sign Up' });
-export const loader: LoaderFunction = (params) => signUpLoader(params);
-export const action: ActionFunction = (params) => signUpAction(params);
+export const loader: LoaderFunction = (r) => signUpLoader(r);
+export const action: ActionFunction = (r) => signUpAction(r);
+
+function useActionDataE(submissionKey?: string): SignUpDTO {
+  const data = useActionData<SignUpDTO>(submissionKey);
+  if (!data) {
+    return right(none as None);
+  }
+  return data;
+}
 
 export default function SignUpRoute() {
-  const { error } = useRouteData<RouteData>();
-  const pendingForm = usePendingFormSubmit();
+  const data = useActionDataE('signup');
+  const transition = useTransition('signup');
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -36,8 +48,13 @@ export default function SignUpRoute() {
             </Link>
           </p>
         </div>
-        <Form className="mt-8 space-y-6" method="post" replace>
-          <fieldset disabled={!!pendingForm}>
+        <Form
+          submissionKey="signup"
+          className="mt-8 space-y-6"
+          method="post"
+          replace
+        >
+          <fieldset disabled={transition.state == 'submitting'}>
             <div className="rounded-md shadow-sm -space-y-px">
               <div>
                 <label htmlFor="email-address" className="sr-only">
@@ -52,7 +69,7 @@ export default function SignUpRoute() {
                   autoCorrect="off"
                   className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
                   placeholder="Email address"
-                  defaultValue={error?.value.email}
+                  defaultValue={foldDefaultValue((c) => c.email, data)}
                 />
               </div>
               <div>
@@ -66,11 +83,16 @@ export default function SignUpRoute() {
                   autoComplete="new-password"
                   className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
                   placeholder="Password"
-                  defaultValue={error?.value.password}
+                  defaultValue={foldDefaultValue((c) => c.password, data)}
                 />
               </div>
             </div>
-            {error && <Errors message={error.message} />}
+            {foldError(
+              (error) => (
+                <Errors message={D.draw(error)} />
+              ),
+              data
+            )}
           </fieldset>
 
           <div>

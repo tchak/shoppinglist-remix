@@ -1,10 +1,9 @@
+import type { LoaderFunction, ActionFunction } from 'remix';
+import { redirect, useSubmit } from 'remix';
 import { useCallback, useEffect, useState, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
-import type { ActionFunction, LoaderFunction } from 'remix';
-import { redirect, useSubmit } from 'remix';
 
 export const loader: LoaderFunction = () => redirect('/');
-
 export const action: ActionFunction = async ({ request }) => {
   const body = new URLSearchParams(await request.text());
   return redirect(String(body.get('redirectTo')));

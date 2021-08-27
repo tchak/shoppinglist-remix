@@ -1,8 +1,8 @@
 import type { LoaderFunction } from 'remix';
 
-import { signOutLoader } from '../loaders';
+import { signOutLoader } from '../middlewares';
 
-export const loader: LoaderFunction = (params) => signOutLoader(params);
+export const loader: LoaderFunction = (r) => signOutLoader(r);
 
 export default function SignOutRoute() {
   return null;

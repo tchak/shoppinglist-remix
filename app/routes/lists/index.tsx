@@ -1,21 +1,44 @@
-import type { MetaFunction, LoaderFunction, ActionFunction } from 'remix';
-import { useRouteData, Link, Form, usePendingFormSubmit } from 'remix';
+import type { LoaderFunction, ActionFunction } from 'remix';
+import { useLoaderData, Link, Form, useTransition } from 'remix';
 import { TrashIcon, ShareIcon } from '@heroicons/react/outline';
 import { Tooltip } from '@reach/tooltip';
 
-import { getListsLoader, GetListsData as RouteData } from '../../loaders';
-import { listsActions } from '../../actions';
+import { pipe } from 'fp-ts/function';
+import { fold } from 'fp-ts/These';
 
-export const meta: MetaFunction = ({ data }: { data: RouteData }) => {
-  return { title: `Shoppinglist (${data.lists.length})` };
+import type { MetaFunction } from '../../lib/remix';
+import type { SharedListsDTO, SharedList } from '../../lib/dto';
+import { getListsLoader, listsActions } from '../../middlewares';
+import { foldBoth } from '../../lib/shared';
+
+export const meta: MetaFunction<SharedListsDTO> = ({ data }) => {
+  return {
+    title: foldBoth(
+      () => '',
+      (lists) => `Shoppinglist (${lists.length})`,
+      data
+    ),
+  };
 };
 
-export const loader: LoaderFunction = (params) => getListsLoader(params);
-export const action: ActionFunction = (params) => listsActions(params);
+export const loader: LoaderFunction = (r) => getListsLoader(r);
+export const action: ActionFunction = (r) => listsActions(r);
 
 export default function ListsIndexRoute() {
-  const { lists } = useRouteData<RouteData>();
-  const pendingForm = usePendingFormSubmit();
+  const lists = useLoaderData<SharedListsDTO>();
+
+  return pipe(
+    lists,
+    fold(
+      () => <Lists lists={[]} />,
+      (lists) => <Lists lists={lists} />,
+      (_, lists) => <Lists lists={lists} />
+    )
+  );
+}
+
+function Lists({ lists }: { lists: SharedList[] }) {
+  const transition = useTransition();
 
   return (
     <ul className="divide-y divide-gray-200">
@@ -28,7 +51,7 @@ export default function ListsIndexRoute() {
                   <div>
                     {list.title}{' '}
                     <span className="text-xs text-gray-400">
-                      ({list.items.length})
+                      ({list.itemsCount})
                     </span>
                   </div>
 
@@ -49,7 +72,7 @@ export default function ListsIndexRoute() {
                 <button
                   className="px-3 opacity-0 group-hover:opacity-100 transition duration-200 ease-in-out"
                   type="submit"
-                  disabled={!!pendingForm}
+                  disabled={transition.state != 'idle'}
                 >
                   <TrashIcon className="hover:text-red-500 h-5 w-5" />
                 </button>

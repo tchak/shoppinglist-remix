@@ -18,7 +18,7 @@ import { Tooltip } from '@reach/tooltip';
 import Interweave from 'interweave';
 import { UrlMatcher } from 'interweave-autolink';
 
-import type { Item } from '../db';
+import type { Item } from '../lib/dto';
 
 interface ListItemProps {
   onToggle: (id: string, checked: boolean) => void;
@@ -130,20 +130,22 @@ function ListItem({
             </p>
           </div>
 
-          <Tooltip label="Add note">
-            <button
-              className="ml-3 pointer-events-auto opacity-0 md:group-hover:opacity-100 transition duration-200 ease-in-out"
-              type="button"
-              onClick={() => onOpen(id)}
-            >
-              <PencilIcon className="hover:text-blue-500 h-6 w-6" />
-              <span className="sr-only">
-                <FormattedMessage defaultMessage="Edit" id="wEQDC6" />
-              </span>
-            </button>
-          </Tooltip>
+          {!checked ? (
+            <Tooltip label="Add note">
+              <button
+                className="ml-3 pointer-events-auto opacity-0 md:group-hover:opacity-100 transition duration-200 ease-in-out"
+                type="button"
+                onClick={() => onOpen(id)}
+              >
+                <PencilIcon className="hover:text-blue-500 h-6 w-6" />
+                <span className="sr-only">
+                  <FormattedMessage defaultMessage="Edit" id="wEQDC6" />
+                </span>
+              </button>
+            </Tooltip>
+          ) : null}
 
-          <Tooltip label="Check item">
+          <Tooltip label={checked ? 'Uncheck item' : 'Check item'}>
             <button
               className="ml-3 pointer-events-auto opacity-0 md:group-hover:opacity-100 transition duration-200 ease-in-out"
               type="button"

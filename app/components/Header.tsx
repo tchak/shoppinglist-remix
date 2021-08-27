@@ -1,4 +1,4 @@
-import { Form, usePendingFormSubmit } from 'remix';
+import { Form, useTransition } from 'remix';
 import { NavLink, useMatch } from 'react-router-dom';
 import { ClipboardCheckIcon } from '@heroicons/react/outline';
 import { FormattedMessage } from 'react-intl';
@@ -25,7 +25,7 @@ export function Header() {
 }
 
 function HeaderAction() {
-  const pendingForm = usePendingFormSubmit();
+  const transition = useTransition();
   const isLanding = useMatch('/');
   const isLists = useMatch('/lists');
 
@@ -35,7 +35,7 @@ function HeaderAction() {
         <input type="hidden" name="title" value="New Shoppinglist" />
         <button
           type="submit"
-          disabled={!!pendingForm}
+          disabled={transition.state == 'submitting'}
           className="relative inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-green-500"
         >
           <FormattedMessage defaultMessage="Create new list" id="TLszpS" />

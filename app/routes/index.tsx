@@ -1,21 +1,24 @@
-import type { MetaFunction, LoaderFunction } from 'remix';
+import type { LoaderFunction } from 'remix';
 import { Link } from 'remix';
 import { FormattedMessage } from 'react-intl';
+import * as M from 'hyper-ts/lib/Middleware';
+import { pipe } from 'fp-ts/function';
 
-import { withSession, requireUser } from '../sessions';
+import type { MetaFunction } from '../lib/remix';
+import { getUser } from '../lib/sessions';
+import { redirect, json, toHandler } from '../lib/hyper';
 
 export const meta: MetaFunction = () => {
   return { title: 'Shoppinglist' };
 };
 
-export const loader: LoaderFunction = ({ request }) =>
-  withSession(request, (session) =>
-    requireUser(
-      session,
-      () => '/lists',
-      () => null
-    )
-  );
+export const loader: LoaderFunction = (r) =>
+  pipe(
+    getUser,
+    M.ichain(() => redirect('/lists')),
+    M.orElse(() => json(null)),
+    toHandler
+  )(r);
 
 export default function IndexRoute() {
   return (

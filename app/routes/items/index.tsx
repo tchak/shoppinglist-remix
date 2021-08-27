@@ -1,8 +1,8 @@
 import type { LoaderFunction } from 'remix';
 
-import { getItemsLoader } from '../../loaders';
+import { getItemsLoader } from '../../middlewares';
 
-export const loader: LoaderFunction = (params) => getItemsLoader(params);
+export const loader: LoaderFunction = (r) => getItemsLoader(r);
 
 export default function ItemsIndexRoute() {
   return null;

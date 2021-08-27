@@ -1,28 +1,29 @@
-import { ReactNode, useRef, useEffect } from 'react';
-import {
-  LinksFunction,
-  LoaderFunction,
-  MetaFunction,
-  useRouteData,
-} from 'remix';
+import type { ReactNode } from 'react';
+import type { LinksFunction, LoaderFunction, MetaFunction } from 'remix';
 import {
   Meta,
   Links,
   Scripts,
   LiveReload,
   useMatches,
-  json,
-  usePendingLocation,
+  useTransition,
+  useLoaderData,
 } from 'remix';
 import { withProfiler } from '@sentry/react';
 import { IntlProvider } from 'react-intl';
-import { useLocation, Outlet } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import { XCircleIcon } from '@heroicons/react/solid';
+
+import { pipe } from 'fp-ts/function';
+import { Status } from 'hyper-ts';
+import * as M from 'hyper-ts/lib/Middleware';
 
 import stylesUrl from './styles/index.css';
 
-import { withLocale } from './sessions';
-import { getIntlMessages, DEFAULT_LOCALE } from './intl';
+import { decodeLocale } from './lib/sessions';
+import { getIntlMessages, DEFAULT_LOCALE } from './lib/intl';
+import { useScrollRestoration } from './hooks/useScrollRestoration';
+import { toHandler, JSONError } from './lib/hyper';
 
 import { ApplicationOutlet } from './components/ApplicationOutlet';
 import { Progress } from './components/Progress';
@@ -78,25 +79,31 @@ export const meta: MetaFunction = () => {
   };
 };
 
-export const loader: LoaderFunction = ({ request }) =>
-  withLocale(request, (locale) =>
-    json(
-      {
-        locale,
-        messages: getIntlMessages(locale),
-        ENV: {
-          APP_DOMAIN: process.env['APP_DOMAIN'],
-          COMMIT_ID: process.env['COMMIT_ID'],
-          SENTRY_DSN: process.env['SENTRY_DSN'],
-        },
-      },
-      {
-        headers: {
-          'cache-control': 'max-age=600',
-        },
-      }
-    )
-  );
+export const loader: LoaderFunction = (r) =>
+  pipe(
+    decodeLocale,
+    M.ichainW((locale) =>
+      pipe(
+        M.status(Status.OK),
+        M.ichain(() => M.header('cache-control', 'max-age=600')),
+        M.ichain(() =>
+          M.json(
+            {
+              locale,
+              messages: getIntlMessages(locale),
+              ENV: {
+                APP_DOMAIN: process.env['APP_DOMAIN'],
+                COMMIT_ID: process.env['COMMIT_ID'],
+                SENTRY_DSN: process.env['SENTRY_DSN'],
+              },
+            },
+            () => JSONError
+          )
+        )
+      )
+    ),
+    toHandler
+  )(r);
 
 function Document({
   locale = DEFAULT_LOCALE,
@@ -141,13 +148,17 @@ function Document({
 }
 
 export function App() {
-  // useTemporaryScrollManagement();
-  const pendingLocation = usePendingLocation();
-  const { locale, ENV, messages } = useRouteData<RouteData>();
+  useScrollRestoration();
+  const transition = useTransition();
+  const { locale, ENV, messages } = useLoaderData<RouteData>();
   const noLayout = useMatches().some(({ handle }) => handle?.layout == false);
 
   return (
-    <Document pendingLocation={!!pendingLocation} locale={locale} ENV={ENV}>
+    <Document
+      pendingLocation={transition.state != 'idle'}
+      locale={locale}
+      ENV={ENV}
+    >
       <IntlProvider locale={locale} messages={messages}>
         {noLayout ? <Outlet /> : <ApplicationOutlet />}
       </IntlProvider>
@@ -183,22 +194,3 @@ export function ErrorBoundary({ error }: { error: Error }) {
 }
 
 export default withProfiler(App);
-
-function useTemporaryScrollManagement() {
-  const location = useLocation();
-  const locations = useRef<Set<string>>();
-
-  if (!locations.current) {
-    locations.current = new Set();
-    locations.current.add(location.key);
-  }
-
-  useEffect(() => {
-    const wasWeirdHistoryBug = location.key === 'default';
-    if (wasWeirdHistoryBug || locations.current?.has(location.key)) return;
-    locations.current?.add(location.key);
-    requestAnimationFrame(() => {
-      window.scrollTo(0, 0);
-    });
-  }, [location]);
-}

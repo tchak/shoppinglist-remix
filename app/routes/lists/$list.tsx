@@ -1,12 +1,21 @@
+import type { LoaderFunction, ActionFunction } from 'remix';
 import { useState, useMemo, useEffect } from 'react';
-import type { MetaFunction, LoaderFunction, ActionFunction } from 'remix';
-import { useRouteData, useSubmit } from 'remix';
+import { useLoaderData, useSubmit } from 'remix';
 import { useDebouncedCallback } from 'use-debounce';
 import ms from 'ms';
 import fetchRetry from 'fetch-retry';
 
-import { getListLoader, GetListData as RouteData } from '../../loaders';
-import { listActions } from '../../actions';
+import type { Task } from 'fp-ts/Task';
+import type { Option } from 'fp-ts/Option';
+import { pipe } from 'fp-ts/function';
+import { chain, fromIO } from 'fp-ts/Task';
+import { fold } from 'fp-ts/These';
+import { findFirst } from 'fp-ts/Array';
+
+import type { MetaFunction } from '../../lib/remix';
+import type { Item, ListWithItems, ListDTO } from '../../lib/dto';
+import { getListLoader, listActions } from '../../middlewares';
+import { foldBoth, foldNullable } from '../../lib/shared';
 
 import { ListTitle } from '../../components/ListTitle';
 import { AddItemCombobox } from '../../components/AddItemCombobox';
@@ -17,17 +26,34 @@ import {
 import { ItemDetailDialog } from '../../components/ItemDetailDialog';
 import { useRefetchOnWindowFocus, useRefetch } from '../_refetch';
 
-export const meta: MetaFunction = ({ data }: { data: RouteData }) => {
-  return { title: data.list.title };
+export const meta: MetaFunction<ListDTO> = ({ data }) => {
+  return {
+    title: foldBoth(
+      () => '',
+      ({ title }) => title,
+      data
+    ),
+  };
 };
 
-export const loader: LoaderFunction = (params) => getListLoader(params);
-export const action: ActionFunction = (params) => listActions(params);
+export const loader: LoaderFunction = (r) => getListLoader(r);
+export const action: ActionFunction = (r) => listActions(r);
 
 export default function ListsShowRoute() {
   useRefetchOnWindowFocus();
+  const list = useLoaderData<ListDTO>();
 
-  const { list } = useRouteData<RouteData>();
+  return pipe(
+    list,
+    fold(
+      () => <div>List not found</div>,
+      (list) => <ListItems list={list} />,
+      (_, list) => <ListItems list={list} />
+    )
+  );
+}
+
+function ListItems({ list }: { list: ListWithItems }) {
   const {
     item,
     items,
@@ -37,7 +63,6 @@ export default function ListsShowRoute() {
     toggleItem,
     deleteItem,
   } = useItems(list);
-
   const activeItems = useMemo(
     () => items.filter(({ checked }) => !checked),
     [items]
@@ -66,17 +91,26 @@ export default function ListsShowRoute() {
         onOpen={openItem}
       />
 
-      {item && <ItemDetailDialog item={item} onDismiss={closeItem} />}
+      {foldNullable(
+        (item) => (
+          <ItemDetailDialog item={item} onDismiss={closeItem} />
+        ),
+        item
+      )}
     </div>
   );
 }
 
 function useSelectedItem(
-  items: RouteData['list']['items']
-): [RouteData['list']['items'][0] | null, (id: string) => void, () => void] {
+  items: Item[]
+): [Option<Item>, (id: string) => void, () => void] {
   const [itemId, setItemId] = useState<string>();
   const item = useMemo(
-    () => items.find((item) => item.id == itemId) ?? null,
+    () =>
+      pipe(
+        items,
+        findFirst((item) => item.id == itemId)
+      ),
     [itemId, items]
   );
   const openItem = (id: string) => setItemId(id);
@@ -85,11 +119,11 @@ function useSelectedItem(
   return [item, openItem, closeItem];
 }
 
-function useItems(list: RouteData['list']) {
+function useItems(list: ListWithItems) {
   const submit = useSubmit();
   const refetch = useDebouncedCallback(useRefetch(), ms('5 seconds'));
   const [items, setItems] = useState(list.items);
-  const [item, openItem, closeItem] = useSelectedItem(list.items);
+  const [item, openItem, closeItem] = useSelectedItem(items);
 
   useEffect(() => {
     setItems(list.items);
@@ -104,13 +138,19 @@ function useItems(list: RouteData['list']) {
       submit({ title }, { replace: true, method: 'post' }),
     toggleItem: (id: string, checked: boolean) => {
       const body = new URLSearchParams({ checked: String(checked) });
-      fetchItem(id, 'put', body).finally(() => refetch());
+      pipe(
+        fetchItem(id, 'put', body),
+        chain(() => fromIO(refetch))
+      )();
       setItems((items) =>
         items.map((item) => (item.id == id ? { ...item, checked } : item))
       );
     },
     deleteItem: (id: string) => {
-      fetchItem(id, 'delete').finally(() => refetch());
+      pipe(
+        fetchItem(id, 'delete'),
+        chain(() => fromIO(refetch))
+      )();
       setItems((items) => items.filter((item) => item.id != id));
     },
   };
@@ -122,13 +162,18 @@ function fetchItem(
   id: string,
   method: 'put' | 'delete',
   body?: URLSearchParams
-) {
-  const url = new URL(`/items/${id}`, location.toString());
-  url.searchParams.set('_data', 'routes/items/$item');
-  return fetchWithRetry(url.toString(), {
-    method,
-    body,
-    retries: 3,
-    retryDelay: (attempt) => Math.pow(2, attempt) * 1000,
-  });
+): Task<boolean> {
+  return () => {
+    const url = new URL(`/items/${id}`, location.toString());
+    url.searchParams.set('_data', 'routes/items/$item');
+    return fetchWithRetry(url.toString(), {
+      method,
+      body,
+      retries: 3,
+      retryDelay: (attempt) => Math.pow(2, attempt) * 1000,
+    }).then(
+      (response) => response.ok,
+      () => false
+    );
+  };
 }

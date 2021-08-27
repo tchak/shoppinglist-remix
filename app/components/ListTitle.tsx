@@ -2,18 +2,18 @@ import { useCallback, useState } from 'react';
 import { PencilIcon } from '@heroicons/react/outline';
 import { isHotkey } from 'is-hotkey';
 import { FormattedMessage } from 'react-intl';
-import { usePendingFormSubmit, useSubmit } from 'remix';
+import { useSubmit, useTransition } from 'remix';
 
 const isEnterKey = isHotkey('enter');
 const isEscKey = isHotkey('esc');
 
 export function ListTitle({ list }: { list: { id: string; title: string } }) {
   const submit = useSubmit();
-  const pendingForm = usePendingFormSubmit();
+  const transition = useTransition();
   const [isEditing, setIsEditing] = useState(false);
 
   const action = `/lists/${list.id}`;
-  const title = (pendingForm?.data.get('title') as string) ?? list.title;
+  const title = (transition?.formData?.get('title') as string) ?? list.title;
   const onClick = () => setIsEditing(true);
   const onSubmit = useCallback(
     (value: string) => {
@@ -32,7 +32,7 @@ export function ListTitle({ list }: { list: { id: string; title: string } }) {
     [submit, action, title]
   );
 
-  if (isEditing && !pendingForm) {
+  if (isEditing && transition.state != 'submitting') {
     return (
       <div>
         <label htmlFor="list-title" className="sr-only">
