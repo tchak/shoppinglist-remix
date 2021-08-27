@@ -65,7 +65,8 @@ export class RemixConnection<S> implements Connection<S> {
   }
 
   getQuery(): unknown {
-    return this.req.url;
+    const url = new URL(this.req.url);
+    return Object.fromEntries(url.searchParams);
   }
 
   getOriginalUrl(): string {

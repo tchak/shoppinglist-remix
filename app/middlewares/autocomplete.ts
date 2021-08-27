@@ -1,70 +1,91 @@
-import Fuse from 'fuse.js';
+import { matchSorter } from 'match-sorter';
 import Cache from 'lru-cache';
 
+import type { IO } from 'fp-ts/IO';
 import { pipe } from 'fp-ts/function';
-import { fromNullable, getOrElse } from 'fp-ts/Option';
-import { map } from 'fp-ts/TaskEither';
+import * as O from 'fp-ts/Option';
+import * as T from 'fp-ts/Task';
+import * as TE from 'fp-ts/TaskEither';
 
-import index from '../data/food-index.json';
 import list from '../data/food-list.json';
-
 import { prisma } from '../lib/db';
 
-type FuseJSONIndex = { keys: string[]; records: Fuse.FuseIndexRecords };
-
-const baseList: string[] = list as any;
-const baseIndex: FuseJSONIndex = index as any;
-
-const cache = new Cache<string, Fuse<string>>({
+type Store = [Set<string>, string[]];
+const cache = new Cache<string, Store>({
   max: 100,
   noDisposeOnSet: true,
   updateAgeOnGet: true,
 });
 
-function getFuse(userId: string): Fuse<string> {
+function getStore(userId: string): O.Option<Store> {
+  return O.fromNullable(cache.get(userId));
+}
+
+function setStore(userId: string, set: Set<string>): IO<void> {
+  return () => cache.set(userId, [set, [...set]]);
+}
+
+function modifyStore(
+  store: Store,
+  f: (add: (term: string) => void) => void
+): Store {
+  return pipe(store, ([set]) => {
+    f((term: string) => set.add(term));
+    return [set, [...set]];
+  });
+}
+
+function getUserStore(userId: string): T.Task<Store> {
   return pipe(
-    fromNullable(cache.get(userId)),
-    getOrElse(() => {
-      const index = Fuse.parseIndex(baseIndex);
-      return new Fuse<string>(baseList, {}, index);
-    })
+    getStore(userId),
+    O.match(
+      () => {
+        const set = new Set(list);
+        return pipe(
+          prisma((p) =>
+            p.item.findMany({
+              select: { title: true },
+              distinct: ['title'],
+              where: {
+                list: { users: { some: { userId } } },
+                title: { notIn: [...set] },
+              },
+            })
+          ),
+          TE.chainIOK((items) => {
+            for (const { title } of items) {
+              set.add(title);
+            }
+            return setStore(userId, set);
+          }),
+          TE.match(
+            () => [set, [...set]],
+            () => [set, [...set]]
+          )
+        );
+      },
+      (store) => T.of(store)
+    )
   );
 }
 
-async function autocompleteForUser(userId: string): Promise<Fuse<string>> {
-  const fuse = getFuse(userId);
-
-  await pipe(
-    prisma((p) =>
-      p.item.findMany({
-        select: { title: true },
-        distinct: ['title'],
-        where: { list: { users: { some: { userId } } } },
-      })
-    ),
-    map((items) => {
-      for (const { title } of items) {
-        fuse.add(title);
-      }
-      cache.set(userId, fuse);
-    })
-  )();
-
-  return fuse;
-}
-
-export async function autocompleteSearchTerm(
+export function autocompleteSearchTerm(
   term: string,
   userId: string
-): Promise<string[]> {
-  const fuse = await autocompleteForUser(userId);
-  return fuse.search(term, { limit: 6 }).map((result) => result.item);
+): T.Task<string[]> {
+  return pipe(
+    getUserStore(userId),
+    T.map(([, store]) => matchSorter(store, term))
+  );
 }
 
-export async function autocompleteAddTerm(
+export function autocompleteAddTerm(
   term: string,
   userId: string
-): Promise<void> {
-  const fuse = await autocompleteForUser(userId);
-  fuse.add(term);
+): T.Task<void> {
+  return pipe(
+    getUserStore(userId),
+    T.map((store) => modifyStore(store, (add) => add(term))),
+    T.chainIOK(([set]) => setStore(userId, set))
+  );
 }
