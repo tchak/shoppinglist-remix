@@ -9,7 +9,7 @@ import type { Option } from 'fp-ts/Option';
 import { pipe } from 'fp-ts/function';
 import * as T from 'fp-ts/Task';
 import * as TH from 'fp-ts/These';
-import * as A from 'fp-ts/Array';
+import * as A from 'fp-ts/ReadonlyArray';
 
 import { Item, ListWithItems, listWithItemsEither } from '../../lib/dto';
 import { getListLoader, listActions } from '../../middlewares';
@@ -102,7 +102,7 @@ function ListWithItemsComponent({ list }: { list: ListWithItems }) {
 }
 
 function useSelectedItem(
-  items: Item[]
+  items: readonly Item[]
 ): [Option<Item>, (id: string) => void, () => void] {
   const [itemId, setItemId] = useState<string>();
   const item = useMemo(
