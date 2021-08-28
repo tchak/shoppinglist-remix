@@ -1,36 +1,19 @@
-import type { LoaderFunction, ActionFunction } from 'remix';
-import { redirect, useSubmit } from 'remix';
 import { useCallback, useEffect, useState, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
-export const loader: LoaderFunction = () => redirect('/');
-export const action: ActionFunction = async ({ request }) => {
-  const body = new URLSearchParams(await request.text());
-  return redirect(String(body.get('redirectTo')));
-};
-
-export default function RefetchRouteComponent() {
-  return null;
+export function useRevalidate() {
+  const navigate = useNavigate();
+  return () => navigate('.', { replace: true });
 }
 
-export function useRefetch(redirectTo?: string) {
-  const location = useLocation();
-  const submit = useSubmit();
-  return () =>
-    submit(
-      { redirectTo: redirectTo ?? location.pathname },
-      { method: 'post', action: '/_refetch', replace: true }
-    );
-}
-
-export function useRefetchOnWindowFocus() {
+export function useRevalidateOnWindowFocus() {
   const shouldRefetch = useRef(false);
   const isVisible = usePageVisible();
-  const refetch = useRefetch();
+  const revalidate = useRevalidate();
 
   useEffect(() => {
     if (isVisible && shouldRefetch.current) {
-      refetch();
+      revalidate();
     }
     shouldRefetch.current = true;
     // eslint-disable-next-line react-hooks/exhaustive-deps

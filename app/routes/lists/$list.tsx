@@ -15,6 +15,10 @@ import { Item, ListWithItems, listWithItemsEither } from '../../lib/dto';
 import { getListLoader, listActions } from '../../middlewares';
 import { foldNullable } from '../../lib/shared';
 import { decodeRouteData, useRouteData } from '../../hooks/useRouteData';
+import {
+  useRevalidate,
+  useRevalidateOnWindowFocus,
+} from '../../hooks/useRevalidate';
 
 import {
   ListTitle,
@@ -23,7 +27,6 @@ import {
   CheckedOffItemsList,
   ItemDetailDialog,
 } from '../../components';
-import { useRefetchOnWindowFocus, useRefetch } from '../_refetch';
 
 export const meta: MetaFunction = ({ data }) => {
   return {
@@ -42,7 +45,7 @@ export const loader: LoaderFunction = (r) => getListLoader(r);
 export const action: ActionFunction = (r) => listActions(r);
 
 export default function Lists$ListRouteComponent() {
-  useRefetchOnWindowFocus();
+  useRevalidateOnWindowFocus();
   return pipe(
     useRouteData(listWithItemsEither),
     TH.match(
@@ -121,7 +124,7 @@ function useSelectedItem(
 
 function useItems(list: ListWithItems) {
   const submit = useSubmit();
-  const refetch = useDebouncedCallback(useRefetch(), ms('5 seconds'));
+  const revalidate = useDebouncedCallback(useRevalidate(), ms('5 seconds'));
   const [items, setItems] = useState(list.items);
   const [item, openItem, closeItem] = useSelectedItem(items);
 
@@ -140,7 +143,7 @@ function useItems(list: ListWithItems) {
       const body = new URLSearchParams({ checked: String(checked) });
       pipe(
         fetchItem(id, 'put', body),
-        T.chain(() => T.fromIO(refetch))
+        T.chain(() => T.fromIO(revalidate))
       )();
       setItems((items) =>
         items.map((item) => (item.id == id ? { ...item, checked } : item))
@@ -149,7 +152,7 @@ function useItems(list: ListWithItems) {
     deleteItem: (id: string) => {
       pipe(
         fetchItem(id, 'delete'),
-        T.chain(() => T.fromIO(refetch))
+        T.chain(() => T.fromIO(revalidate))
       )();
       setItems((items) => items.filter((item) => item.id != id));
     },
