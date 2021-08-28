@@ -13,6 +13,9 @@ import { Middleware, execMiddleware } from 'hyper-ts/lib/Middleware';
 import { pipe } from 'fp-ts/function';
 import { match } from 'fp-ts/Either';
 import * as L from 'fp-ts-contrib/List';
+import * as H from 'hyper-ts';
+import * as M from 'hyper-ts/lib/Middleware';
+import * as E from 'fp-ts/Either';
 import type { Reader } from 'fp-ts/Reader';
 
 type Params = Parameters<LoaderFunction>[0]['params'];
@@ -197,56 +200,44 @@ function parseFormURLEncoded(body: string): unknown {
   return Object.fromEntries(params);
 }
 
-import { Status as H_Status } from 'hyper-ts';
-import {
-  decodeMethod,
-  redirect as M_redirect,
-  json as M_json,
-  ichain,
-  status,
-  closeHeaders,
-  end,
-} from 'hyper-ts/lib/Middleware';
-import { left, right } from 'fp-ts/Either';
-
 export const MethodNotAllowed = 'MethodNotAllowed' as const;
 export const JSONError = 'JSONError' as const;
 
-export const GET = decodeMethod((s) =>
-  s.toLowerCase() === 'get' ? right('GET') : left(MethodNotAllowed)
+export const GET = M.decodeMethod((s) =>
+  s.toLowerCase() == 'get' ? E.right('GET') : E.left(MethodNotAllowed)
 );
 
-export const POST = decodeMethod((s) =>
-  s.toLowerCase() === 'post' ? right('POST') : left(MethodNotAllowed)
+export const POST = M.decodeMethod((s) =>
+  s.toLowerCase() == 'post' ? E.right('POST') : E.left(MethodNotAllowed)
 );
 
-export const PATCH = decodeMethod((s) =>
-  s.toLowerCase() === 'patch' ? right('PATCH') : left(MethodNotAllowed)
+export const PATCH = M.decodeMethod((s) =>
+  s.toLowerCase() == 'patch' ? E.right('PATCH') : E.left(MethodNotAllowed)
 );
 
-export const PUT = decodeMethod((s) =>
-  s.toLowerCase() === 'put' ? right('PUT') : left(MethodNotAllowed)
+export const PUT = M.decodeMethod((s) =>
+  s.toLowerCase() == 'put' ? E.right('PUT') : E.left(MethodNotAllowed)
 );
 
-export const DELETE = decodeMethod((s) =>
-  s.toLowerCase() === 'delete' ? right('DELETE') : left(MethodNotAllowed)
+export const DELETE = M.decodeMethod((s) =>
+  s.toLowerCase() == 'delete' ? E.right('DELETE') : E.left(MethodNotAllowed)
 );
 
 export const redirect = <E = never>(uri: string) =>
   pipe(
-    M_redirect<E>(uri),
-    ichain(() => closeHeaders()),
-    ichain(() => end())
+    M.redirect<E>(uri),
+    M.ichain(() => M.closeHeaders()),
+    M.ichain(() => M.end())
   );
 
 export const json = (body: unknown) =>
   pipe(
-    status(H_Status.OK),
-    ichain(() => M_json(body, () => JSONError))
+    M.status(H.Status.OK),
+    M.ichain(() => M.json(body, () => JSONError))
   );
 
 export const notFound = pipe(
-  status(H_Status.NotFound),
-  ichain(() => closeHeaders()),
-  ichain(() => end())
+  M.status(H.Status.NotFound),
+  M.ichain(() => M.closeHeaders()),
+  M.ichain(() => M.end())
 );
