@@ -4,10 +4,11 @@ import * as T from 'fp-ts/Task';
 import * as M from 'hyper-ts/lib/Middleware';
 import * as D from 'io-ts/Decoder';
 
-import { getUser } from '../lib/sessions';
+import { getUser, toHandler } from '../lib/sessions';
 import { prisma } from '../lib/db';
-import { POST, PUT, DELETE, redirect, json, toHandler } from '../lib/hyper';
+import { POST, PUT, DELETE, redirect, json } from '../lib/hyper';
 import { autocompleteAddTerm, autocompleteSearchTerm } from './autocomplete';
+import { BooleanFromString } from '../lib/shared';
 
 const term = pipe(
   D.struct({ term: D.string }),
@@ -17,10 +18,26 @@ const createItemBody = D.struct({ title: D.string });
 const updateItemBody = D.partial({
   title: D.string,
   note: D.string,
-  checked: D.boolean,
+  checked: BooleanFromString,
 });
 const listId = D.string;
 const itemId = D.string;
+
+const findItem = (id: string, user: { id: string }) =>
+  prisma((p) =>
+    p.item.findFirst({
+      select: { id: true, listId: true },
+      where: { list: { users: { some: { user } } }, id },
+    })
+  );
+
+const findList = (id: string, user: { id: string }) =>
+  prisma((p) =>
+    p.list.findFirst({
+      where: { id, users: { some: { user } } },
+      select: { id: true, users: { select: { userId: true } } },
+    })
+  );
 
 export const createItem = (user: { id: string }) =>
   pipe(
@@ -29,13 +46,7 @@ export const createItem = (user: { id: string }) =>
     M.bindW('body', () => M.decodeBody(createItemBody.decode)),
     M.chainTaskEitherKW(({ id, body }) =>
       pipe(
-        prisma((p) =>
-          p.list.findFirst({
-            rejectOnNotFound: true,
-            where: { id, users: { some: { user } } },
-            select: { id: true, users: { select: { userId: true } } },
-          })
-        ),
+        findList(id, user),
         TE.chain((list) =>
           pipe(
             prisma((p) =>
@@ -49,12 +60,12 @@ export const createItem = (user: { id: string }) =>
                   autocompleteAddTerm(body.title, userId)
                 )
               )
-            )
+            ),
+            TE.map(() => '/lists')
           )
         )
       )
-    ),
-    M.map((item) => `/lists/${item.listId}`)
+    )
   );
 
 const updateItem = (user: { id: string }) =>
@@ -64,13 +75,7 @@ const updateItem = (user: { id: string }) =>
     M.bindW('body', () => M.decodeBody(updateItemBody.decode)),
     M.chainTaskEitherKW(({ id, body }) =>
       pipe(
-        prisma((p) =>
-          p.item.findFirst({
-            rejectOnNotFound: true,
-            select: { listId: true },
-            where: { list: { users: { some: { user } } }, id },
-          })
-        ),
+        findItem(id, user),
         TE.chain((item) =>
           pipe(
             prisma((p) =>
@@ -83,8 +88,7 @@ const updateItem = (user: { id: string }) =>
           )
         )
       )
-    ),
-    M.map((item) => `/lists/${item.listId}`)
+    )
   );
 
 const deleteItem = (user: { id: string }) =>
@@ -93,13 +97,7 @@ const deleteItem = (user: { id: string }) =>
     M.chainW(() => M.decodeParam('item', itemId.decode)),
     M.chainTaskEitherKW((id) =>
       pipe(
-        prisma((p) =>
-          p.item.findFirst({
-            rejectOnNotFound: true,
-            select: { listId: true },
-            where: { list: { users: { some: { user } } }, id },
-          })
-        ),
+        findItem(id, user),
         TE.chain((item) =>
           pipe(
             prisma((p) =>
@@ -109,8 +107,7 @@ const deleteItem = (user: { id: string }) =>
           )
         )
       )
-    ),
-    M.map((item) => `/lists/${item.listId}`)
+    )
   );
 
 export const getItemsLoader = pipe(
@@ -125,14 +122,13 @@ export const getItemsLoader = pipe(
 
 export const itemActions = pipe(
   getUser,
-  M.ichainW((user) =>
+  M.chainW((user) =>
     pipe(
       updateItem(user),
-      M.alt(() => deleteItem(user)),
-      M.alt(() => M.right('/'))
+      M.alt(() => deleteItem(user))
     )
   ),
-  M.ichain((path) => redirect(path)),
+  M.ichainW((item) => json(item)),
   M.orElse(() => redirect('/signup')),
   toHandler
 );

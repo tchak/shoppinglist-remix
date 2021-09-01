@@ -4,9 +4,9 @@ import * as M from 'hyper-ts/lib/Middleware';
 import * as D from 'io-ts/Decoder';
 
 import type { ListWithItems, SharedLists } from '../lib/dto';
-import { getUser } from '../lib/sessions';
+import { getUser, toHandler } from '../lib/sessions';
 import { prisma, PrismaError } from '../lib/db';
-import { POST, PUT, DELETE, redirect, json, toHandler } from '../lib/hyper';
+import { POST, PUT, DELETE, redirect, json } from '../lib/hyper';
 
 import { createItem } from './items';
 
@@ -68,11 +68,10 @@ const deleteList = (user: { id: string }) =>
 function getList(
   id: string,
   user: { id: string }
-): TE.TaskEither<string, ListWithItems> {
+): TE.TaskEither<PrismaError, ListWithItems> {
   return pipe(
     prisma((p) =>
       p.list.findFirst({
-        rejectOnNotFound: true,
         where: { id },
         include: {
           users: { select: { userId: true } },
@@ -80,7 +79,6 @@ function getList(
         },
       })
     ),
-    TE.mapLeft((error) => error.message),
     TE.chainFirstTaskK((list) => assignListToUser(list, user.id))
   );
 }
@@ -117,15 +115,15 @@ function hasUser(
 function assignListToUser(
   list: { id: string; users: { userId: string }[] },
   userId: string
-): TE.TaskEither<PrismaError, { userId: string; listId: string } | true> {
+): TE.TaskEither<PrismaError, { userId: string; listId: string }> {
   return hasUser(list, userId)
-    ? TE.right<never, true>(true)
+    ? TE.right({ userId, listId: list.id })
     : prisma((p) => p.userList.create({ data: { userId, listId: list.id } }));
 }
 
 export const getListsLoader = pipe(
   getUser,
-  M.chainTaskK((user) => getLists(user)),
+  M.chainTaskK(getLists),
   M.ichainW((lists) => json(lists)),
   M.orElse(() => redirect('/signin')),
   toHandler
@@ -143,12 +141,7 @@ export const getListLoader = pipe(
 
 export const listsActions = pipe(
   getUser,
-  M.ichainW((user) =>
-    pipe(
-      createList(user),
-      M.alt(() => M.right('/'))
-    )
-  ),
+  M.chainW(createList),
   M.ichain((path) => redirect(path)),
   M.orElse(() => redirect('/signin')),
   toHandler
@@ -156,12 +149,11 @@ export const listsActions = pipe(
 
 export const listActions = pipe(
   getUser,
-  M.ichainW((user) =>
+  M.chainW((user) =>
     pipe(
       createItem(user),
       M.alt(() => updateList(user)),
-      M.alt(() => deleteList(user)),
-      M.alt(() => M.right('/'))
+      M.alt(() => deleteList(user))
     )
   ),
   M.ichain((path) => redirect(path)),

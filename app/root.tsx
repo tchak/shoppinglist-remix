@@ -20,10 +20,10 @@ import * as M from 'hyper-ts/lib/Middleware';
 
 import stylesUrl from './styles/index.css';
 
-import { decodeLocale } from './lib/sessions';
+import { decodeLocale, toHandler } from './lib/sessions';
 import { getIntlMessages, DEFAULT_LOCALE } from './lib/intl';
 import { useScrollRestoration } from './hooks/useScrollRestoration';
-import { toHandler, JSONError } from './lib/hyper';
+import { JSONError } from './lib/hyper';
 
 import { ApplicationOutlet, Progress } from './components';
 
@@ -80,7 +80,10 @@ export const meta: MetaFunction = () => {
 
 export const loader: LoaderFunction = (r) =>
   pipe(
-    decodeLocale,
+    decodeLocale({
+      supportedLocales: ['en-GB', 'fr-FR'],
+      defaultLocale: 'en-GB',
+    }),
     M.ichainW((locale) =>
       pipe(
         M.status(Status.OK),

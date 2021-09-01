@@ -5,8 +5,8 @@ import * as D from 'io-ts/Decoder';
 
 import { prisma } from '../lib/db';
 import { hash, verify } from '../lib/argon2.server';
-import { getUser, getSession, setUser, unsetUser } from '../lib/sessions';
-import { POST, redirect, json, toHandler } from '../lib/hyper';
+import { getUser, toHandler } from '../lib/sessions';
+import { POST, redirect, json, clearSession, session } from '../lib/hyper';
 
 export interface ValidPasswordBrand {
   readonly ValidPasswordBrand: unique symbol;
@@ -39,7 +39,7 @@ export const signUpAction = pipe(
       M.chainTaskEitherKW(({ email, password }) =>
         pipe(
           TE.fromTask<string, never>(hash(password)),
-          TE.chainW((password) =>
+          TE.chain((password) =>
             prisma((p) =>
               p.user.create({
                 data: { email, password },
@@ -49,11 +49,10 @@ export const signUpAction = pipe(
           )
         )
       ),
-      M.chainW((user) => pipe(getSession, M.chainTaskK(setUser(user)))),
-      M.ichainW((cookie) =>
+      M.ichainW((user) =>
         pipe(
           M.redirect('/lists'),
-          M.ichain(() => M.header('set-cookie', cookie)),
+          M.ichain(() => session('user', user.id)),
           M.ichain(() => M.closeHeaders()),
           M.ichain(() => M.end())
         )
@@ -82,7 +81,6 @@ export const signInAction = pipe(
         pipe(
           prisma((p) =>
             p.user.findUnique({
-              rejectOnNotFound: true,
               where: { email },
               select: { id: true, password: true },
             })
@@ -97,11 +95,10 @@ export const signInAction = pipe(
           )
         )
       ),
-      M.chainW((user) => pipe(getSession, M.chainTaskK(setUser(user)))),
-      M.ichainW((cookie) =>
+      M.ichainW((user) =>
         pipe(
           M.redirect('/lists'),
-          M.ichain(() => M.header('set-cookie', cookie)),
+          M.ichain(() => session('user', user.id)),
           M.ichain(() => M.closeHeaders()),
           M.ichain(() => M.end())
         )
@@ -113,15 +110,9 @@ export const signInAction = pipe(
 );
 
 export const signOutLoader = pipe(
-  unsetUser,
-  M.ichainW((cookie) =>
-    pipe(
-      M.redirect('/signin'),
-      M.ichain(() => M.header('set-cookie', cookie)),
-      M.ichain(() => M.closeHeaders()),
-      M.ichain(() => M.end())
-    )
-  ),
-  M.orElse(() => redirect('/signin')),
+  M.redirect('/signin'),
+  M.ichain(() => clearSession('user')),
+  M.ichain(() => M.closeHeaders()),
+  M.ichain(() => M.end()),
   toHandler
 );

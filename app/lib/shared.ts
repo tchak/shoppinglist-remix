@@ -99,3 +99,8 @@ export function withFallback<A>(
 ): D.Decoder<unknown, A> {
   return D.alt(() => decoderOf(a))(decoder);
 }
+
+export const BooleanFromString: D.Decoder<unknown, boolean> = pipe(
+  D.literal('true', 'false'),
+  D.map((s) => s === 'true')
+);

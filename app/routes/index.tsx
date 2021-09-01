@@ -5,8 +5,8 @@ import * as M from 'hyper-ts/lib/Middleware';
 import { pipe } from 'fp-ts/function';
 
 import type { MetaFunction } from '../lib/remix';
-import { getUser } from '../lib/sessions';
-import { redirect, json, toHandler } from '../lib/hyper';
+import { getUser, toHandler } from '../lib/sessions';
+import { redirect, json } from '../lib/hyper';
 
 export const meta: MetaFunction = () => {
   return { title: 'Shoppinglist' };
