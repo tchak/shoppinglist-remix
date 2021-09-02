@@ -4,6 +4,7 @@ import resolveAcceptLanguage from 'resolve-accept-language';
 
 import { pipe } from 'fp-ts/function';
 import * as E from 'fp-ts/Either';
+import * as RTE from 'fp-ts/ReaderTaskEither';
 import * as M from 'hyper-ts/lib/Middleware';
 import * as D from 'io-ts/Decoder';
 
@@ -66,15 +67,20 @@ export const decodeLocale = ({
     M.orElse(() => M.of(defaultLocale))
   );
 
-export const getUser = pipe(
-  decodeSession('user', D.string.decode),
-  M.chainTaskEitherKW((id) =>
+const findUser = pipe(
+  RTE.ask<string>(),
+  RTE.chainTaskEitherK((id) =>
     prisma((p) =>
       p.user.findUnique({
         select: { id: true, email: true },
         where: { id },
       })
     )
-  ),
+  )
+);
+
+export const getUser = pipe(
+  decodeSession('user', D.string.decode),
+  M.chainTaskEitherKW(findUser),
   M.mapLeft(() => UnauthorizedError)
 );

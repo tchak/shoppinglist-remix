@@ -15,11 +15,10 @@ export default function handleRequest(
     <RemixServer context={remixContext} url={request.url} />
   );
 
+  responseHeaders.set('content-type', 'text/html');
+
   return new Response(`<!DOCTYPE html>${markup}`, {
     status: responseStatusCode,
-    headers: {
-      ...Object.fromEntries(responseHeaders),
-      'content-type': 'text/html',
-    },
+    headers: responseHeaders,
   });
 }
