@@ -13,6 +13,7 @@
     "start": "remix-serve build",
     "start:dev": "remix run",
     "build:remix": "remix build",
+    "remix:setup": "./bin/remix-magic",
     "migrate": "prisma migrate deploy",
     "ts-node": "ts-node --compiler-options '{\"module\":\"CommonJS\"}'",
     "watch:css": "postcss styles --base styles --dir app/styles -w",
@@ -21,9 +22,9 @@
     "extract:i18n": "formatjs extract 'app/**/*.ts*' --out-file app/lang/en-GB.json --id-interpolation-pattern '[sha512:contenthash:base64:6]'",
     "compile:i18n": "formatjs compile app/lang/en-GB.json --ast --out-file app/lang/compiled/en-GB.json",
     "test": "run-s typecheck lint",
-    "scalingo-postbuild": "run-s test build migrate",
+    "scalingo-postbuild": "run-s test build migrate remix:setup",
     "prebuild": "yarn clean",
-    "postinstall": "./bin/remix-magic"
+    "postinstall": "run-s remix:setup"
   },
   "dependencies": {
     "@headlessui/react": "^1.4.1",
