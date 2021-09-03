@@ -10,7 +10,7 @@ import * as E from 'fp-ts/Either';
 import * as O from 'fp-ts/Option';
 import * as D from 'io-ts/Decoder';
 
-import { Item, ListWithItems, listWithItemsEither } from '../../lib/dto';
+import { Item, ListWithItems, listWithItemsDecoder } from '../../lib/dto';
 import { getListLoader, listActions } from '../../middlewares';
 import { BooleanFromString } from '../../lib/shared';
 import { decodeRouteData, useRouteData } from '../../hooks/useRouteData';
@@ -27,7 +27,7 @@ import {
 export const meta: MetaFunction = ({ data }) => {
   return {
     title: pipe(
-      decodeRouteData(listWithItemsEither, data),
+      decodeRouteData(listWithItemsDecoder, data),
       TH.match(
         () => '',
         ({ title }) => title,
@@ -43,7 +43,7 @@ export const action: ActionFunction = (r) => listActions(r);
 export default function Lists$ListRouteComponent() {
   useRevalidateOnWindowFocus();
   return pipe(
-    useRouteData(listWithItemsEither),
+    useRouteData(listWithItemsDecoder),
     TH.match(
       () => <div>List not found</div>,
       (list) => <ListWithItemsComponent list={list} />,

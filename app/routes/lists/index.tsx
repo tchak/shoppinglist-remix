@@ -6,14 +6,14 @@ import { Tooltip } from '@reach/tooltip';
 import { pipe } from 'fp-ts/function';
 import * as TH from 'fp-ts/These';
 
-import { SharedLists, sharedListsEither } from '../../lib/dto';
+import { SharedLists, sharedListsDecoder } from '../../lib/dto';
 import { getListsLoader, listsActions } from '../../middlewares';
 import { decodeRouteData, useRouteData } from '../../hooks/useRouteData';
 
 export const meta: MetaFunction = ({ data }) => {
   return {
     title: pipe(
-      decodeRouteData(sharedListsEither, data),
+      decodeRouteData(sharedListsDecoder, data),
       TH.match(
         (error) => `Error ${error}`,
         (lists) => `Shoppinglist (${lists.length})`,
@@ -28,7 +28,7 @@ export const action: ActionFunction = (r) => listsActions(r);
 
 export default function ListsIndexRouteComponent() {
   return pipe(
-    useRouteData(sharedListsEither),
+    useRouteData(sharedListsDecoder),
     TH.match(
       () => <SharedListsComponent lists={[]} />,
       (lists) => <SharedListsComponent lists={lists} />,

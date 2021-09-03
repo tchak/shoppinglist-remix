@@ -47,8 +47,8 @@ export const listWithItems = pipe(
   D.readonly
 );
 
-export const sharedListsEither = these(D.string, sharedLists);
-export const listWithItemsEither = these(D.string, listWithItems);
+export const sharedListsDecoder = these(D.string, sharedLists);
+export const listWithItemsDecoder = these(D.string, listWithItems);
 
 export type Item = D.TypeOf<typeof item>;
 export type ListWithItems = D.TypeOf<typeof listWithItems>;
