@@ -1,12 +1,20 @@
 import { pipe } from 'fp-ts/function';
 import * as TE from 'fp-ts/TaskEither';
 import * as T from 'fp-ts/Task';
+import * as TH from 'fp-ts/These';
 import * as M from 'hyper-ts/lib/Middleware';
 import * as D from 'io-ts/Decoder';
 
-import { getUser, toHandler } from '../lib/sessions';
+import { getUser, toHandler, UnauthorizedError } from '../lib/sessions';
 import { prisma } from '../lib/db';
-import { POST, PUT, DELETE, redirect, json } from '../lib/hyper';
+import {
+  POST,
+  PUT,
+  DELETE,
+  redirect,
+  json,
+  MethodNotAllowed,
+} from '../lib/hyper';
 import { autocompleteAddTerm, autocompleteSearchTerm } from './autocomplete';
 import { BooleanFromString } from '../lib/shared';
 
@@ -129,6 +137,13 @@ export const itemActions = pipe(
     )
   ),
   M.ichainW((item) => redirect(`/lists/${item.listId}`)),
-  M.orElse(() => redirect('/signup')),
+  M.orElse((error) => {
+    if (error == UnauthorizedError) {
+      return redirect('/signin');
+    } else if (error == MethodNotAllowed) {
+      return redirect('/');
+    }
+    return json(TH.left('input error'));
+  }),
   toHandler
 );

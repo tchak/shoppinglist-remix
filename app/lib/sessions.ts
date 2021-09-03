@@ -11,10 +11,10 @@ import * as D from 'io-ts/Decoder';
 import { prisma } from './db';
 import { decodeSession, toHandlerWithSession } from './hyper';
 
-const UnauthorizedError = 'UnauthorizedError' as const;
-type UnauthorizedError = typeof UnauthorizedError;
-const AcceptLanguageParseError = 'AcceptLanguageParseError' as const;
-type AcceptLanguageParseError = typeof AcceptLanguageParseError;
+export const UnauthorizedError = 'UnauthorizedError' as const;
+export type UnauthorizedError = typeof UnauthorizedError;
+export const AcceptLanguageParseError = 'AcceptLanguageParseError' as const;
+export type AcceptLanguageParseError = typeof AcceptLanguageParseError;
 
 export const cookieSession = createCookieSessionStorage({
   cookie: {

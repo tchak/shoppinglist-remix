@@ -1,12 +1,20 @@
 import { pipe } from 'fp-ts/function';
 import * as TE from 'fp-ts/TaskEither';
+import * as TH from 'fp-ts/These';
 import * as M from 'hyper-ts/lib/Middleware';
 import * as D from 'io-ts/Decoder';
 
 import type { ListWithItems, SharedLists } from '../lib/dto';
-import { getUser, toHandler } from '../lib/sessions';
+import { getUser, toHandler, UnauthorizedError } from '../lib/sessions';
 import { prisma, PrismaError } from '../lib/db';
-import { POST, PUT, DELETE, redirect, json } from '../lib/hyper';
+import {
+  POST,
+  PUT,
+  DELETE,
+  redirect,
+  json,
+  MethodNotAllowed,
+} from '../lib/hyper';
 
 import { createItem } from './items';
 
@@ -143,7 +151,14 @@ export const listsActions = pipe(
   getUser,
   M.chainW(createList),
   M.ichain((path) => redirect(path)),
-  M.orElse(() => redirect('/signin')),
+  M.orElse((error) => {
+    if (error == UnauthorizedError) {
+      return redirect('/signin');
+    } else if (error == MethodNotAllowed) {
+      return redirect('/');
+    }
+    return json(TH.left('input error'));
+  }),
   toHandler
 );
 
@@ -157,6 +172,13 @@ export const listActions = pipe(
     )
   ),
   M.ichain((path) => redirect(path)),
-  M.orElse(() => redirect('/signin')),
+  M.orElse((error) => {
+    if (error == UnauthorizedError) {
+      return redirect('/signin');
+    } else if (error == MethodNotAllowed) {
+      return redirect('/');
+    }
+    return json(TH.left('input error'));
+  }),
   toHandler
 );

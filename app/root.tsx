@@ -27,7 +27,7 @@ import { JSONError } from './lib/hyper';
 
 import { ApplicationOutlet, Progress } from './components';
 
-type RouteData = {
+type LoaderData = {
   ENV: Record<string, string>;
   locale: string;
   messages: Record<string, string>;
@@ -152,7 +152,7 @@ function Document({
 export function App() {
   //useScrollRestoration();
   const transition = useTransition();
-  const { locale, ENV, messages } = useLoaderData<RouteData>();
+  const { locale, ENV, messages } = useLoaderData<LoaderData>();
   const noLayout = useMatches().some(({ handle }) => handle?.layout == false);
 
   return (
