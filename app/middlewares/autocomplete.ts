@@ -6,6 +6,7 @@ import { pipe } from 'fp-ts/function';
 import * as O from 'fp-ts/Option';
 import * as T from 'fp-ts/Task';
 import * as TE from 'fp-ts/TaskEither';
+import * as A from 'fp-ts/Array';
 
 import list from '../data/food-list.json';
 import { prisma } from '../lib/db';
@@ -75,7 +76,8 @@ export function autocompleteSearchTerm(
 ): T.Task<string[]> {
   return pipe(
     getUserStore(userId),
-    T.map(([, store]) => matchSorter(store, term))
+    T.map(([, store]) => matchSorter(store, term)),
+    T.map((items) => pipe(items, A.takeLeft(8)))
   );
 }
 
