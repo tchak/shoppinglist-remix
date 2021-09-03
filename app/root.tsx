@@ -150,7 +150,7 @@ function Document({
 }
 
 export function App() {
-  useScrollRestoration();
+  //useScrollRestoration();
   const transition = useTransition();
   const { locale, ENV, messages } = useLoaderData<RouteData>();
   const noLayout = useMatches().some(({ handle }) => handle?.layout == false);
