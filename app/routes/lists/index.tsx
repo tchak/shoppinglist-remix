@@ -8,12 +8,12 @@ import * as TH from 'fp-ts/These';
 
 import { SharedLists, sharedListsDecoder } from '../../lib/dto';
 import { getListsLoader, listsActions } from '../../middlewares';
-import { decodeRouteData, useRouteData } from '../../hooks/useRouteData';
+import { decodeLoaderData, useLoaderData } from '../../hooks/useRouteData';
 
 export const meta: MetaFunction = ({ data }) => {
   return {
     title: pipe(
-      decodeRouteData(sharedListsDecoder, data),
+      decodeLoaderData(sharedListsDecoder, data),
       TH.match(
         (error) => `Error ${error}`,
         (lists) => `Shoppinglist (${lists.length})`,
@@ -28,7 +28,7 @@ export const action: ActionFunction = (r) => listsActions(r);
 
 export default function ListsIndexRouteComponent() {
   return pipe(
-    useRouteData(sharedListsDecoder),
+    useLoaderData(sharedListsDecoder),
     TH.match(
       () => <SharedListsComponent lists={[]} />,
       (lists) => <SharedListsComponent lists={lists} />,

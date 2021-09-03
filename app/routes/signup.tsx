@@ -4,31 +4,23 @@ import type {
   ActionFunction,
   MetaFunction,
 } from 'remix';
-import { Link, Form, useActionData, useTransition } from 'remix';
+import { Link, Form, useTransition } from 'remix';
 import { UserIcon, XCircleIcon } from '@heroicons/react/solid';
-import { right } from 'fp-ts/Either';
-import { none, None } from 'fp-ts/Option';
-import * as D from 'io-ts/Decoder';
+import { pipe, constNull, constUndefined } from 'fp-ts/function';
+import * as TH from 'fp-ts/These';
+import * as O from 'fp-ts/Option';
 
-import type { SignUpDTO } from '../lib/dto';
+import { signUpDecoder } from '../lib/dto';
 import { signUpLoader, signUpAction } from '../middlewares';
-import { foldError, foldDefaultValue } from '../lib/shared';
+import { useActionData } from '../hooks/useRouteData';
 
 export const handle: RouteHandle = { layout: false };
 export const meta: MetaFunction = () => ({ title: 'Sign Up' });
 export const loader: LoaderFunction = (r) => signUpLoader(r);
 export const action: ActionFunction = (r) => signUpAction(r);
 
-function useActionDataE(submissionKey?: string): SignUpDTO {
-  const data = useActionData<SignUpDTO>(submissionKey);
-  if (!data) {
-    return right(none as None);
-  }
-  return data;
-}
-
 export default function SignUpRouteComponent() {
-  const data = useActionDataE('signup');
+  const data = useActionData(signUpDecoder, 'signup');
   const transition = useTransition('signup');
 
   return (
@@ -69,7 +61,19 @@ export default function SignUpRouteComponent() {
                   autoCorrect="off"
                   className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
                   placeholder="Email address"
-                  defaultValue={foldDefaultValue((c) => c.email, data)}
+                  defaultValue={pipe(
+                    data,
+                    O.match(constUndefined, (data) =>
+                      pipe(
+                        data,
+                        TH.match(
+                          constUndefined,
+                          ({ email }) => email,
+                          (_, { email }) => email
+                        )
+                      )
+                    )
+                  )}
                 />
               </div>
               <div>
@@ -83,15 +87,34 @@ export default function SignUpRouteComponent() {
                   autoComplete="new-password"
                   className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
                   placeholder="Password"
-                  defaultValue={foldDefaultValue((c) => c.password, data)}
+                  defaultValue={pipe(
+                    data,
+                    O.match(constUndefined, (data) =>
+                      pipe(
+                        data,
+                        TH.match(
+                          constUndefined,
+                          ({ password }) => password,
+                          (_, { password }) => password
+                        )
+                      )
+                    )
+                  )}
                 />
               </div>
             </div>
-            {foldError(
-              (error) => (
-                <Errors message={D.draw(error)} />
-              ),
-              data
+            {pipe(
+              data,
+              O.match(constNull, (data) =>
+                pipe(
+                  data,
+                  TH.match(
+                    (error) => <Errors message={error} />,
+                    constNull,
+                    (error) => <Errors message={error} />
+                  )
+                )
+              )
             )}
           </fieldset>
 

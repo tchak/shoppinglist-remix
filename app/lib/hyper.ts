@@ -320,7 +320,9 @@ function parseFormURLEncoded(body: string): unknown {
 }
 
 export const MethodNotAllowed = 'MethodNotAllowed' as const;
+export type MethodNotAllowed = typeof MethodNotAllowed;
 export const JSONError = 'JSONError' as const;
+export type JSONError = typeof JSONError;
 
 export const GET = M.decodeMethod((s) =>
   s.toUpperCase() == 'get' ? E.right('GET' as const) : E.left(MethodNotAllowed)

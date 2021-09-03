@@ -41,6 +41,6 @@ export function prisma<Data>(
       }
       return promise;
     },
-    (e: unknown) => e as PrismaError
+    () => PrismaError
   );
 }

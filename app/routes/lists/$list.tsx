@@ -13,7 +13,7 @@ import * as D from 'io-ts/Decoder';
 import { Item, ListWithItems, listWithItemsDecoder } from '../../lib/dto';
 import { getListLoader, listActions } from '../../middlewares';
 import { BooleanFromString } from '../../lib/shared';
-import { decodeRouteData, useRouteData } from '../../hooks/useRouteData';
+import { decodeLoaderData, useLoaderData } from '../../hooks/useRouteData';
 import { useRevalidateOnWindowFocus } from '../../hooks/useRevalidate';
 
 import {
@@ -27,7 +27,7 @@ import {
 export const meta: MetaFunction = ({ data }) => {
   return {
     title: pipe(
-      decodeRouteData(listWithItemsDecoder, data),
+      decodeLoaderData(listWithItemsDecoder, data),
       TH.match(
         () => '',
         ({ title }) => title,
@@ -43,7 +43,7 @@ export const action: ActionFunction = (r) => listActions(r);
 export default function Lists$ListRouteComponent() {
   useRevalidateOnWindowFocus();
   return pipe(
-    useRouteData(listWithItemsDecoder),
+    useLoaderData(listWithItemsDecoder),
     TH.match(
       () => <div>List not found</div>,
       (list) => <ListWithItemsComponent list={list} />,

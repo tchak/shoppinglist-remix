@@ -1,6 +1,3 @@
-import type { These } from 'fp-ts/These';
-import type { Option } from 'fp-ts/Option';
-
 import { pipe } from 'fp-ts/function';
 import * as D from 'io-ts/Decoder';
 
@@ -49,11 +46,15 @@ export const listWithItems = pipe(
 
 export const sharedListsDecoder = these(D.string, sharedLists);
 export const listWithItemsDecoder = these(D.string, listWithItems);
+export const signInDecoder = these(
+  D.string,
+  D.struct({ email: D.string, password: D.string })
+);
+export const signUpDecoder = these(
+  D.string,
+  D.struct({ email: D.string, password: D.string })
+);
 
 export type Item = D.TypeOf<typeof item>;
 export type ListWithItems = D.TypeOf<typeof listWithItems>;
 export type SharedLists = D.TypeOf<typeof sharedLists>;
-
-type CredentialsDTO = { email: string; password: string };
-export type SignInDTO = These<D.DecodeError, Option<CredentialsDTO>>;
-export type SignUpDTO = These<D.DecodeError, Option<CredentialsDTO>>;
