@@ -11,8 +11,8 @@ const isEnterKey = isHotkey('enter');
 const isEscKey = isHotkey('esc');
 
 export function ListTitle({ list }: { list: { id: string; title: string } }) {
-  const submit = useSubmit(`${list.id}-update`);
-  const transition = useTransition(`${list.id}-update`);
+  const submit = useSubmit(`${list.id}-title`);
+  const transition = useTransition(`${list.id}-title`);
   const [isEditing, setIsEditing] = useState(false);
 
   const action = `/lists/${list.id}`;

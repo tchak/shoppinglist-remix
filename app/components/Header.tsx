@@ -34,7 +34,7 @@ function HeaderAction() {
         <input type="hidden" name="title" value="New Shoppinglist" />
         <button
           type="submit"
-          disabled={transition.state == 'submitting'}
+          disabled={transition.state != 'idle'}
           className="relative inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-green-500"
         >
           <FormattedMessage defaultMessage="Create new list" id="TLszpS" />

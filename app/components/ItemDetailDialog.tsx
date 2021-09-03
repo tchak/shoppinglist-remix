@@ -13,7 +13,7 @@ export function ItemDetailDialog({
   onDismiss: () => void;
 }) {
   const pendingFormRef = useRef(false);
-  const transition = useTransition();
+  const transition = useTransition(`${item.id}-note`);
 
   useEffect(() => {
     if (transition.state == 'submitting') {
@@ -46,7 +46,12 @@ export function ItemDetailDialog({
           aria-modal="true"
           aria-labelledby="modal-headline"
         >
-          <Form action={`/items/${item.id}`} method="put" replace>
+          <Form
+            action={`/items/${item.id}`}
+            submissionKey={`${item.id}-note`}
+            method="put"
+            replace
+          >
             <div>
               <div className="text-center">
                 <h3
