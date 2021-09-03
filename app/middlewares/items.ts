@@ -61,7 +61,7 @@ export const createItem = (user: { id: string }) =>
                 )
               )
             ),
-            TE.map(() => '/lists')
+            TE.map(() => `/lists/${id}`)
           )
         )
       )
@@ -128,7 +128,7 @@ export const itemActions = pipe(
       M.alt(() => deleteItem(user))
     )
   ),
-  M.ichainW((item) => json(item)),
+  M.ichainW((item) => redirect(`/lists/${item.listId}`)),
   M.orElse(() => redirect('/signup')),
   toHandler
 );

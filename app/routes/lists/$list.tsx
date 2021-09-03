@@ -1,24 +1,20 @@
 import type { LoaderFunction, ActionFunction, MetaFunction } from 'remix';
-import { useState, useMemo, useEffect } from 'react';
-import { useSubmit } from 'remix';
-import { useDebouncedCallback } from 'use-debounce';
-import ms from 'ms';
-import fetchRetry from 'fetch-retry';
+import { useState, useMemo } from 'react';
+import { useSubmit, useTransition, useTransitions } from 'remix';
 
 import type { Option } from 'fp-ts/Option';
 import { pipe } from 'fp-ts/function';
-import * as T from 'fp-ts/Task';
 import * as TH from 'fp-ts/These';
 import * as A from 'fp-ts/ReadonlyArray';
+import * as E from 'fp-ts/Either';
+import * as O from 'fp-ts/Option';
+import * as D from 'io-ts/Decoder';
 
 import { Item, ListWithItems, listWithItemsEither } from '../../lib/dto';
 import { getListLoader, listActions } from '../../middlewares';
-import { foldNullable } from '../../lib/shared';
+import { BooleanFromString } from '../../lib/shared';
 import { decodeRouteData, useRouteData } from '../../hooks/useRouteData';
-import {
-  useRevalidate,
-  useRevalidateOnWindowFocus,
-} from '../../hooks/useRevalidate';
+import { useRevalidateOnWindowFocus } from '../../hooks/useRevalidate';
 
 import {
   ListTitle,
@@ -57,51 +53,41 @@ export default function Lists$ListRouteComponent() {
 }
 
 function ListWithItemsComponent({ list }: { list: ListWithItems }) {
-  const {
-    item,
-    items,
-    openItem,
-    closeItem,
-    createItem,
-    toggleItem,
-    deleteItem,
-  } = useItems(list);
-  const activeItems = useMemo(
-    () => items.filter(({ checked }) => !checked),
-    [items]
-  );
-  const checkedItems = useMemo(
-    () => items.filter(({ checked }) => checked),
-    [items]
-  );
+  const [items, createItem] = useItems(list);
+  const [item, openItem, closeItem] = useSelectedItem(items);
+  const isChecked = useCheckedItem();
+  const activeItems = items.filter((item) => !isChecked(item));
+  const checkedItems = items.filter((item) => isChecked(item));
 
   return (
     <div>
       <ListTitle list={list} />
       <AddItemCombobox onSelect={createItem} />
-
-      <ActiveItemsList
-        items={activeItems}
-        onToggle={toggleItem}
-        onRemove={deleteItem}
-        onOpen={openItem}
-      />
-
-      <CheckedOffItemsList
-        items={checkedItems}
-        onToggle={toggleItem}
-        onRemove={deleteItem}
-        onOpen={openItem}
-      />
-
-      {foldNullable(
-        (item) => (
-          <ItemDetailDialog item={item} onDismiss={closeItem} />
-        ),
-        item
+      <ActiveItemsList items={activeItems} onOpen={openItem} />
+      <CheckedOffItemsList items={checkedItems} onOpen={openItem} />
+      {pipe(
+        item,
+        O.match(
+          () => null,
+          (item) => <ItemDetailDialog item={item} onDismiss={closeItem} />
+        )
       )}
     </div>
   );
+}
+
+function useCheckedItem() {
+  const transitions = useTransitions();
+  return (item: { id: string; checked: boolean }) => {
+    const transition = transitions.get(`${item.id}-toggle`);
+    if (transition?.state == 'submitting') {
+      return pipe(
+        BooleanFromString.decode(transition.formData.get('checked')),
+        E.getOrElse(() => false)
+      );
+    }
+    return item.checked;
+  };
 }
 
 function useSelectedItem(
@@ -122,61 +108,27 @@ function useSelectedItem(
   return [item, openItem, closeItem];
 }
 
-function useItems(list: ListWithItems) {
-  const submit = useSubmit();
-  const revalidate = useDebouncedCallback(useRevalidate(), ms('5 seconds'));
-  const [items, setItems] = useState(list.items);
-  const [item, openItem, closeItem] = useSelectedItem(items);
+function useItems(
+  list: ListWithItems
+): [ListWithItems['items'], (title: string) => void] {
+  const submit = useSubmit('item-create');
+  const transition = useTransition('item-create');
 
-  useEffect(() => {
-    setItems(list.items);
-  }, [list]);
-
-  return {
-    item,
-    items,
-    openItem,
-    closeItem,
-    createItem: (title: string) =>
-      submit({ title }, { replace: true, method: 'post' }),
-    toggleItem: (id: string, checked: boolean) => {
-      const body = new URLSearchParams({ checked: String(checked) });
-      pipe(
-        fetchItem(id, 'put', body),
-        T.chain(() => T.fromIO(revalidate))
-      )();
-      setItems((items) =>
-        items.map((item) => (item.id == id ? { ...item, checked } : item))
-      );
-    },
-    deleteItem: (id: string) => {
-      pipe(
-        fetchItem(id, 'delete'),
-        T.chain(() => T.fromIO(revalidate))
-      )();
-      setItems((items) => items.filter((item) => item.id != id));
-    },
-  };
-}
-
-const fetchWithRetry = fetchRetry(fetch);
-
-function fetchItem(
-  id: string,
-  method: 'put' | 'delete',
-  body?: URLSearchParams
-): T.Task<boolean> {
-  return () => {
-    const url = new URL(`/items/${id}`, location.toString());
-    url.searchParams.set('_data', 'routes/items/$item');
-    return fetchWithRetry(url.toString(), {
-      method,
-      body,
-      retries: 3,
-      retryDelay: (attempt) => Math.pow(2, attempt) * 1000,
-    }).then(
-      (response) => response.ok,
-      () => false
-    );
-  };
+  return [
+    transition.state == 'submitting'
+      ? [
+          {
+            id: '-1',
+            title: pipe(
+              D.string.decode(transition.formData.get('title')),
+              E.getOrElse(() => '')
+            ),
+            checked: true,
+            note: '',
+          },
+          ...list.items,
+        ]
+      : list.items,
+    (title: string) => submit({ title }, { replace: true, method: 'post' }),
+  ];
 }

@@ -1,4 +1,5 @@
 import { useState, ReactNode } from 'react';
+import { useSubmit, useTransition } from 'remix';
 import {
   TrashIcon,
   CheckIcon,
@@ -17,12 +18,13 @@ import { FormattedMessage } from 'react-intl';
 import { Tooltip } from '@reach/tooltip';
 import Interweave from 'interweave';
 import { UrlMatcher } from 'interweave-autolink';
+import { pipe } from 'fp-ts/function';
+import * as E from 'fp-ts/Either';
 
+import { BooleanFromString } from '../lib/shared';
 import type { Item } from '../lib/dto';
 
 interface ListItemProps {
-  onToggle: (id: string, checked: boolean) => void;
-  onRemove: (id: string) => void;
   onOpen: (id: string) => void;
 }
 
@@ -62,13 +64,49 @@ export function CheckedOffItemsList({
   );
 }
 
-function ListItem({
-  item: { id, title, note, checked },
-  onToggle,
-  onRemove,
-  onOpen,
-}: { item: Item } & ListItemProps) {
+function useItemSubmit(id: string) {
+  const toggleKey = `${id}-toggle`;
+  const removeKey = `${id}-remove`;
+  const toggleSubmit = useSubmit(toggleKey);
+  const removeSubmit = useSubmit(removeKey);
+  const toggleTransition = useTransition(toggleKey);
+  const removeTransition = useTransition(removeKey);
+  const onToggle = (checked: boolean) =>
+    toggleSubmit(
+      { checked: checked ? 'true' : 'false' },
+      { action: `/items/${id}`, method: 'put', replace: true }
+    );
+  const onRemove = () =>
+    removeSubmit(null, {
+      action: `/items/${id}`,
+      method: 'delete',
+      replace: true,
+    });
+
+  return {
+    onToggle,
+    onRemove,
+    transitions: {
+      toggle: toggleTransition,
+      remove: removeTransition,
+    },
+  };
+}
+
+function ListItem({ item, onOpen }: { item: Item } & ListItemProps) {
+  const {
+    onToggle,
+    onRemove,
+    transitions: { toggle },
+  } = useItemSubmit(item.id);
   const [swipe, setSwipe] = useState(0);
+  const checked =
+    toggle.state == 'submitting'
+      ? pipe(
+          BooleanFromString.decode(toggle.formData.get('checked')),
+          E.getOrElse(() => false)
+        )
+      : item.checked;
   const CheckedIcon = checked ? PlusIcon : CheckIcon;
   const isChecking = swipe === 1;
   const isRemoving = swipe === -1;
@@ -77,7 +115,7 @@ function ListItem({
     <li className="group py-4 flex">
       {isChecking && (
         <div className="flex justify-between flex-grow relative pointer-events-auto bg-blue-500">
-          <button type="button" onClick={() => onToggle(id, !checked)}>
+          <button type="button" onClick={() => onToggle(!checked)}>
             <CheckedIcon className="h-8 w-8 m-2 text-white" />
             <span className="sr-only">
               <FormattedMessage defaultMessage="Check" id="RDZVQL" />
@@ -99,7 +137,7 @@ function ListItem({
               <FormattedMessage defaultMessage="Remove" id="G/yZLu" />
             </span>
           </button>
-          <button type="button" onClick={() => onRemove(id)}>
+          <button type="button" onClick={() => onRemove()}>
             <TrashIcon className="h-8 w-8 m-2 text-white" />
             <span className="sr-only">
               <FormattedMessage defaultMessage="Cancel" id="47FYwb" />
@@ -110,7 +148,7 @@ function ListItem({
       {!isChecking && !isRemoving && (
         <Slider
           CheckedIcon={CheckedIcon}
-          onTap={() => onOpen(id)}
+          onTap={() => onOpen(item.id)}
           swipe={setSwipe}
         >
           <div role="button" className="ml-3 flex-grow">
@@ -119,11 +157,11 @@ function ListItem({
                 checked ? 'line-through' : ''
               }`}
             >
-              {title}
+              {item.title}
             </p>
             <p className="text-sm text-gray-500">
               <Interweave
-                content={note}
+                content={item.note}
                 matchers={[new UrlMatcher('url', { customTLDs: ['dev'] })]}
                 newWindow={true}
               />
@@ -135,7 +173,7 @@ function ListItem({
               <button
                 className="ml-3 pointer-events-auto opacity-0 md:group-hover:opacity-100 transition duration-200 ease-in-out"
                 type="button"
-                onClick={() => onOpen(id)}
+                onClick={() => onOpen(item.id)}
               >
                 <PencilIcon className="hover:text-blue-500 h-6 w-6" />
                 <span className="sr-only">
@@ -149,7 +187,7 @@ function ListItem({
             <button
               className="ml-3 pointer-events-auto opacity-0 md:group-hover:opacity-100 transition duration-200 ease-in-out"
               type="button"
-              onClick={() => onToggle(id, !checked)}
+              onClick={() => onToggle(!checked)}
             >
               <CheckedIcon className="hover:text-green-500 h-6 w-6" />
               <span className="sr-only">
@@ -162,7 +200,7 @@ function ListItem({
             <button
               className="ml-3 pointer-events-auto opacity-0 md:group-hover:opacity-100 transition duration-200 ease-in-out"
               type="button"
-              onClick={() => onRemove(id)}
+              onClick={() => onRemove()}
             >
               <TrashIcon className="hover:text-red-500 h-6 w-6" />
               <span className="sr-only">

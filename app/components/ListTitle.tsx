@@ -3,17 +3,26 @@ import { PencilIcon } from '@heroicons/react/outline';
 import { isHotkey } from 'is-hotkey';
 import { FormattedMessage } from 'react-intl';
 import { useSubmit, useTransition } from 'remix';
+import { pipe } from 'fp-ts/function';
+import * as D from 'io-ts/Decoder';
+import * as E from 'fp-ts/Either';
 
 const isEnterKey = isHotkey('enter');
 const isEscKey = isHotkey('esc');
 
 export function ListTitle({ list }: { list: { id: string; title: string } }) {
-  const submit = useSubmit();
-  const transition = useTransition();
+  const submit = useSubmit(`${list.id}-update`);
+  const transition = useTransition(`${list.id}-update`);
   const [isEditing, setIsEditing] = useState(false);
 
   const action = `/lists/${list.id}`;
-  const title = (transition?.formData?.get('title') as string) ?? list.title;
+  const title =
+    transition.state == 'submitting'
+      ? pipe(
+          D.string.decode(transition.formData.get('title')),
+          E.getOrElse(() => '')
+        )
+      : list.title;
   const onClick = () => setIsEditing(true);
   const onSubmit = useCallback(
     (value: string) => {
