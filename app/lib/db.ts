@@ -9,6 +9,8 @@ type PrismaClient = PrismaClientClass<{ rejectOnNotFound: true }, never, true>;
 
 export const PrismaError = 'PrismaError' as const;
 export type PrismaError = typeof PrismaError;
+export const NotFoundError = 'NotFoundError' as const;
+export type NotFoundError = typeof NotFoundError;
 
 // add prisma to the NodeJS global type
 interface CustomNodeJsGlobal extends NodeJS.Global {
@@ -26,14 +28,14 @@ if (process.env.NODE_ENV === 'development') {
 
 export function prisma<Data>(
   lazy: (prisma: PrismaClient) => PrismaPromise<Data>
-): TE.TaskEither<PrismaError, Data>;
+): TE.TaskEither<PrismaError | NotFoundError, Data>;
 export function prisma<Data>(
   lazy: (prisma: PrismaClient) => PrismaPromise<Data>[]
-): TE.TaskEither<PrismaError, Data[]>;
+): TE.TaskEither<PrismaError | NotFoundError, Data[]>;
 export function prisma<Data>(
   lazy: (prisma: PrismaClient) => PrismaPromise<Data> | PrismaPromise<Data>[]
-): TE.TaskEither<PrismaError, Data | Data[]> {
-  return TE.tryCatch<PrismaError, Data | Data[]>(
+): TE.TaskEither<PrismaError | NotFoundError, Data | Data[]> {
+  return TE.tryCatch<PrismaError | NotFoundError, Data | Data[]>(
     () => {
       const promise = lazy(_prisma);
       if (Array.isArray(promise)) {
@@ -41,6 +43,11 @@ export function prisma<Data>(
       }
       return promise;
     },
-    () => PrismaError
+    (e) => {
+      if ((e as { name: string }).name == 'NotFoundError') {
+        return NotFoundError;
+      }
+      return PrismaError;
+    }
   );
 }

@@ -6,7 +6,7 @@ import * as D from 'io-ts/Decoder';
 
 import type { ListWithItems, SharedLists } from '../lib/dto';
 import { getUser, toHandler, UnauthorizedError } from '../lib/sessions';
-import { prisma, PrismaError } from '../lib/db';
+import { NotFoundError, prisma, PrismaError } from '../lib/db';
 import {
   POST,
   PUT,
@@ -77,7 +77,7 @@ const deleteList = (user: { id: string }) =>
 function getList(
   id: string,
   user: { id: string }
-): TE.TaskEither<PrismaError, ListWithItems> {
+): TE.TaskEither<PrismaError | NotFoundError, ListWithItems> {
   return pipe(
     prisma((p) =>
       p.list.findFirst({
@@ -124,7 +124,10 @@ function hasUser(
 function assignListToUser(
   list: { id: string; users: { userId: string }[] },
   userId: string
-): TE.TaskEither<PrismaError, { userId: string; listId: string }> {
+): TE.TaskEither<
+  PrismaError | NotFoundError,
+  { userId: string; listId: string }
+> {
   return hasUser(list, userId)
     ? TE.right({ userId, listId: list.id })
     : prisma((p) => p.userList.create({ data: { userId, listId: list.id } }));
@@ -132,9 +135,9 @@ function assignListToUser(
 
 export const getListsLoader = pipe(
   getUser,
-  M.chainTaskK(getLists),
+  M.chainTaskEitherKW(getLists),
   M.ichainW((lists) => json(lists)),
-  M.orElse(() => redirect('/signin')),
+  M.orElse(() => redirect('/')),
   toHandler
 );
 
@@ -142,9 +145,14 @@ export const getListLoader = pipe(
   getUser,
   M.bindTo('user'),
   M.bindW('id', () => M.decodeParam('list', listId.decode)),
-  M.chainTaskK(({ id, user }) => getList(id, user)),
+  M.chainTaskEitherKW(({ id, user }) => getList(id, user)),
   M.ichainW((list) => json(list)),
-  M.orElse(() => redirect('/signin')),
+  M.orElse((error) => {
+    if (error == UnauthorizedError) {
+      return redirect('/signin');
+    }
+    return redirect('/lists');
+  }),
   toHandler
 );
 
@@ -155,7 +163,7 @@ export const listsActions = pipe(
   M.orElse((error) => {
     if (error == UnauthorizedError) {
       return redirect('/signin');
-    } else if (error == MethodNotAllowed) {
+    } else if (error == MethodNotAllowed || error == NotFoundError) {
       return redirect('/');
     }
     return json(TH.left('input error'));
@@ -176,7 +184,7 @@ export const listActions = pipe(
   M.orElse((error) => {
     if (error == UnauthorizedError) {
       return redirect('/signin');
-    } else if (error == MethodNotAllowed) {
+    } else if (error == MethodNotAllowed || error == NotFoundError) {
       return redirect('/');
     }
     return json(TH.left('input error'));

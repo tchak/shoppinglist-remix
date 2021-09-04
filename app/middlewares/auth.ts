@@ -6,7 +6,7 @@ import * as D from 'io-ts/Decoder';
 import * as DE from 'io-ts/DecodeError';
 import * as FS from 'io-ts/FreeSemigroup';
 
-import { prisma, PrismaError } from '../lib/db';
+import { prisma } from '../lib/db';
 import { hash, verify } from '../lib/argon2.server';
 import { getUser, toHandler } from '../lib/sessions';
 import {
@@ -34,8 +34,10 @@ const password = pipe(
 const signUpBody = D.struct({ email: ITD.Email, password });
 const signInBody = D.struct({ email: ITD.Email, password });
 
-const WrondPasswordError = 'WrondPasswordError' as const;
-type WrondPasswordError = typeof WrondPasswordError;
+const WrongEmailError = 'WrongEmailError' as const;
+type WrongEmailError = typeof WrongEmailError;
+const WrongPasswordError = 'WrongPasswordError' as const;
+type WrongPasswordError = typeof WrongPasswordError;
 
 export const signUpLoader = pipe(
   getUser,
@@ -51,19 +53,7 @@ export const signUpAction = pipe(
     pipe(
       POST,
       M.chainW(() => M.decodeBody(signUpBody.decode)),
-      M.chainTaskEitherKW(({ email, password }) =>
-        pipe(
-          TE.fromTask<string, never>(hash(password)),
-          TE.chain((password) =>
-            prisma((p) =>
-              p.user.create({
-                data: { email, password },
-                select: { id: true },
-              })
-            )
-          )
-        )
-      ),
+      M.chainTaskEitherKW(createUserForAuthentication),
       M.ichainW((user) =>
         pipe(
           M.redirect('/lists'),
@@ -97,24 +87,7 @@ export const signInAction = pipe(
     pipe(
       POST,
       M.chainW(() => M.decodeBody(signInBody.decode)),
-      M.chainTaskEitherKW(({ email, password }) =>
-        pipe(
-          prisma((p) =>
-            p.user.findUnique({
-              where: { email },
-              select: { id: true, password: true },
-            })
-          ),
-          TE.chainW((user) =>
-            pipe(
-              TE.fromTask<boolean, never>(verify(user.password, password)),
-              TE.chain((ok) =>
-                ok ? TE.right(user) : TE.left(WrondPasswordError)
-              )
-            )
-          )
-        )
-      ),
+      M.chainTaskEitherKW(findUserForAuthentication),
       M.ichainW((user) =>
         pipe(
           M.redirect('/lists'),
@@ -142,13 +115,52 @@ export const signOutLoader = pipe(
   toHandler
 );
 
+function createUserForAuthentication({
+  email,
+  password,
+}: D.TypeOf<typeof signUpBody>) {
+  return pipe(
+    TE.fromTask<string, never>(hash(password)),
+    TE.chain((password) =>
+      prisma((p) =>
+        p.user.create({
+          data: { email, password },
+          select: { id: true },
+        })
+      )
+    ),
+    TE.mapLeft(() => WrongEmailError)
+  );
+}
+
+function findUserForAuthentication({
+  email,
+  password,
+}: D.TypeOf<typeof signInBody>) {
+  return pipe(
+    prisma((p) =>
+      p.user.findUnique({
+        where: { email },
+        select: { id: true, password: true },
+      })
+    ),
+    TE.mapLeft(() => WrongEmailError),
+    TE.chainW((user) =>
+      pipe(
+        TE.fromTask<boolean, never>(verify(user.password, password)),
+        TE.chain((ok) => (ok ? TE.right(user) : TE.left(WrongPasswordError)))
+      )
+    )
+  );
+}
+
 function drawError(
-  error: D.DecodeError | WrondPasswordError | PrismaError
+  error: D.DecodeError | WrongEmailError | WrongPasswordError
 ): string {
   switch (error) {
-    case WrondPasswordError:
+    case WrongPasswordError:
       return 'wrong password';
-    case PrismaError:
+    case WrongEmailError:
       return 'wrong email';
     default:
       return drawDecodeError(error);

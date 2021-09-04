@@ -6,7 +6,7 @@ import * as M from 'hyper-ts/lib/Middleware';
 import * as D from 'io-ts/Decoder';
 
 import { getUser, toHandler, UnauthorizedError } from '../lib/sessions';
-import { prisma } from '../lib/db';
+import { NotFoundError, prisma } from '../lib/db';
 import {
   POST,
   PUT,
@@ -163,7 +163,7 @@ export const itemActions = pipe(
   M.orElse((error) => {
     if (error == UnauthorizedError) {
       return redirect('/signin');
-    } else if (error == MethodNotAllowed) {
+    } else if (error == MethodNotAllowed || error == NotFoundError) {
       return redirect('/');
     }
     return json(TH.left('input error'));
@@ -178,7 +178,7 @@ export const itemsAction = pipe(
   M.orElse((error) => {
     if (error == UnauthorizedError) {
       return redirect('/signin');
-    } else if (error == MethodNotAllowed) {
+    } else if (error == MethodNotAllowed || error == NotFoundError) {
       return redirect('/');
     }
     return json(TH.left('input error'));
