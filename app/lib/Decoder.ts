@@ -4,6 +4,8 @@ import type { Option } from 'fp-ts/Option';
 import * as E from 'fp-ts/Either';
 import * as D from 'io-ts/Decoder';
 
+import * as G from './Guard';
+
 const sum = D.sum('_tag');
 const leftLiteral = D.literal('Left');
 const rightLiteral = D.literal('Right');
@@ -62,7 +64,7 @@ export function these<E, A>(
   });
 }
 
-export function decoderOf<A>(value: A): D.Decoder<unknown, A> {
+export function of<A>(value: A): D.Decoder<unknown, A> {
   return { decode: () => E.right(value) };
 }
 
@@ -70,10 +72,22 @@ export function withFallback<A>(
   decoder: D.Decoder<unknown, A>,
   a: A
 ): D.Decoder<unknown, A> {
-  return D.alt(() => decoderOf(a))(decoder);
+  return D.alt(() => of(a))(decoder);
 }
 
 export const BooleanFromString: D.Decoder<unknown, boolean> = pipe(
   D.literal('true', 'false'),
   D.map((s) => s === 'true')
 );
+
+export type NonEmptyString = G.NonEmptyString;
+export const NonEmptyString: D.Decoder<unknown, G.NonEmptyString> = D.fromGuard(
+  G.NonEmptyString,
+  'NonEmptyString'
+);
+
+export type UUID = G.UUID;
+export const UUID: D.Decoder<unknown, UUID> = D.fromGuard(G.UUID, 'UUID');
+
+export type Email = G.Email;
+export const Email: D.Decoder<unknown, Email> = D.fromGuard(G.Email, 'Email');

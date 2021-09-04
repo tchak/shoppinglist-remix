@@ -1,7 +1,7 @@
 import { pipe } from 'fp-ts/function';
 import * as D from 'io-ts/Decoder';
 
-import { these } from './shared';
+import * as ITD from './Decoder';
 
 const item = pipe(
   D.struct({
@@ -44,13 +44,13 @@ export const listWithItems = pipe(
   D.readonly
 );
 
-export const sharedListsDecoder = these(D.string, sharedLists);
-export const listWithItemsDecoder = these(D.string, listWithItems);
-export const signInDecoder = these(
+export const sharedListsDecoder = ITD.these(D.string, sharedLists);
+export const listWithItemsDecoder = ITD.these(D.string, listWithItems);
+export const signInDecoder = ITD.these(
   D.string,
   D.struct({ email: D.string, password: D.string })
 );
-export const signUpDecoder = these(
+export const signUpDecoder = ITD.these(
   D.string,
   D.struct({ email: D.string, password: D.string })
 );

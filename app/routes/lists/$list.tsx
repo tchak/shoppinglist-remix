@@ -12,7 +12,7 @@ import * as D from 'io-ts/Decoder';
 
 import { Item, ListWithItems, listWithItemsDecoder } from '../../lib/dto';
 import { getListLoader, listActions } from '../../middlewares';
-import { BooleanFromString } from '../../lib/shared';
+import * as ITD from '../../lib/Decoder';
 import { decodeLoaderData, useLoaderData } from '../../hooks/useRouteData';
 import { useRevalidateOnWindowFocus } from '../../hooks/useRevalidate';
 
@@ -64,7 +64,7 @@ function ListWithItemsComponent({ list }: { list: ListWithItems }) {
       <ListTitle list={list} />
       <AddItemCombobox onSelect={createItem} />
       <ActiveItemsList items={activeItems} onOpen={openItem} />
-      <CheckedOffItemsList items={checkedItems} onOpen={openItem} />
+      <CheckedOffItemsList list={list} items={checkedItems} onOpen={openItem} />
       {pipe(
         item,
         O.match(
@@ -82,7 +82,7 @@ function useCheckedItem() {
     const transition = transitions.get(`${item.id}-toggle`);
     if (transition?.state == 'submitting') {
       return pipe(
-        BooleanFromString.decode(transition.formData.get('checked')),
+        ITD.BooleanFromString.decode(transition.formData.get('checked')),
         E.getOrElse(() => false)
       );
     }

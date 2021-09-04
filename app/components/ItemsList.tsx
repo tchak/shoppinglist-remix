@@ -1,5 +1,5 @@
 import { useState, ReactNode } from 'react';
-import { useSubmit, useTransition } from 'remix';
+import { useSubmit, useTransition, Form } from 'remix';
 import {
   TrashIcon,
   CheckIcon,
@@ -21,7 +21,7 @@ import { UrlMatcher } from 'interweave-autolink';
 import { pipe } from 'fp-ts/function';
 import * as E from 'fp-ts/Either';
 
-import { BooleanFromString } from '../lib/shared';
+import * as ITD from '../lib/Decoder';
 import type { Item } from '../lib/dto';
 
 interface ListItemProps {
@@ -44,9 +44,11 @@ export function ActiveItemsList({
 }
 
 export function CheckedOffItemsList({
+  list,
   items,
   ...props
 }: {
+  list: { id: string };
   items: Item[];
 } & ListItemProps) {
   if (items.length === 0) {
@@ -54,7 +56,17 @@ export function CheckedOffItemsList({
   }
   return (
     <Disclosure>
-      <DisclosureButton>{items.length} checked off</DisclosureButton>
+      <div className="flex justify-between items-center mt-2 mb-4">
+        <DisclosureButton className="underline">
+          {items.length} checked off
+        </DisclosureButton>
+        <Form action="/items" method="delete" replace>
+          <input type="hidden" value={list.id} name="list" />
+          <button className="underline" type="submit">
+            Clear checked off
+          </button>
+        </Form>
+      </div>
       <DisclosurePanel as="ul" className="divide-y divide-gray-200">
         {items.map((item) => (
           <ListItem key={item.id} item={item} {...props} />
@@ -103,7 +115,7 @@ function ListItem({ item, onOpen }: { item: Item } & ListItemProps) {
   const checked =
     toggle.state == 'submitting'
       ? pipe(
-          BooleanFromString.decode(toggle.formData.get('checked')),
+          ITD.BooleanFromString.decode(toggle.formData.get('checked')),
           E.getOrElse(() => false)
         )
       : item.checked;

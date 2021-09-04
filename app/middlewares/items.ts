@@ -16,20 +16,24 @@ import {
   MethodNotAllowed,
 } from '../lib/hyper';
 import { autocompleteAddTerm, autocompleteSearchTerm } from './autocomplete';
-import { BooleanFromString } from '../lib/shared';
+import * as ITD from '../lib/Decoder';
 
-const term = pipe(
+const termQuery = pipe(
   D.struct({ term: D.string }),
   D.map(({ term }) => term)
 );
-const createItemBody = D.struct({ title: D.string });
+const listQuery = pipe(
+  D.struct({ list: ITD.UUID }),
+  D.map(({ list }) => list)
+);
+const createItemBody = D.struct({ title: ITD.NonEmptyString });
 const updateItemBody = D.partial({
-  title: D.string,
+  title: ITD.NonEmptyString,
   note: D.string,
-  checked: BooleanFromString,
+  checked: ITD.BooleanFromString,
 });
-const listId = D.string;
-const itemId = D.string;
+const listId = ITD.UUID;
+const itemId = ITD.UUID;
 
 const findItem = (id: string, user: { id: string }) =>
   prisma((p) =>
@@ -118,10 +122,29 @@ const deleteItem = (user: { id: string }) =>
     )
   );
 
+const clearItems = (user: { id: string }) =>
+  pipe(
+    DELETE,
+    M.chainW(() => M.decodeBody(listQuery.decode)),
+    M.chainTaskEitherKW((id) =>
+      pipe(
+        findList(id, user),
+        TE.chain((list) =>
+          pipe(
+            prisma((p) =>
+              p.item.deleteMany({ where: { listId: list.id, checked: true } })
+            ),
+            TE.map(() => list)
+          )
+        )
+      )
+    )
+  );
+
 export const getItemsLoader = pipe(
   getUser,
   M.bindTo('user'),
-  M.bindW('term', () => M.decodeQuery(term.decode)),
+  M.bindW('term', () => M.decodeQuery(termQuery.decode)),
   M.chainTaskK(({ term, user }) => autocompleteSearchTerm(term, user.id)),
   M.ichainW((items) => json(items)),
   M.orElse(() => json([])),
@@ -137,6 +160,21 @@ export const itemActions = pipe(
     )
   ),
   M.ichainW((item) => redirect(`/lists/${item.listId}`)),
+  M.orElse((error) => {
+    if (error == UnauthorizedError) {
+      return redirect('/signin');
+    } else if (error == MethodNotAllowed) {
+      return redirect('/');
+    }
+    return json(TH.left('input error'));
+  }),
+  toHandler
+);
+
+export const itemsAction = pipe(
+  getUser,
+  M.chainW((user) => clearItems(user)),
+  M.ichainW((list) => redirect(`/lists/${list.id}`)),
   M.orElse((error) => {
     if (error == UnauthorizedError) {
       return redirect('/signin');

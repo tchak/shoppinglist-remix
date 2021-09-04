@@ -15,12 +15,13 @@ import {
   json,
   MethodNotAllowed,
 } from '../lib/hyper';
+import * as ITD from '../lib/Decoder';
 
 import { createItem } from './items';
 
-const createListBody = D.struct({ title: D.string });
-const updateListBody = D.struct({ title: D.string });
-const listId = D.string;
+const createListBody = D.struct({ title: ITD.NonEmptyString });
+const updateListBody = D.struct({ title: ITD.NonEmptyString });
+const listId = ITD.UUID;
 
 const createList = (user: { id: string }) =>
   pipe(
