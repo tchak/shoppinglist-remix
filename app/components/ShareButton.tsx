@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
 import { ShareIcon } from '@heroicons/react/outline';
-import useClipboard from 'react-use-clipboard';
-import ms from 'ms';
 import { Tooltip } from '@reach/tooltip';
+import ms from 'ms';
+import { useEffect, useState } from 'react';
 import { useIntl } from 'react-intl';
+import useClipboard from 'react-use-clipboard';
 
 import { Notification } from '.';
 

@@ -1,14 +1,13 @@
-import type { LoaderFunction, ActionFunction, MetaFunction } from 'remix';
-import { Link, Form, useTransitions } from 'remix';
-import { TrashIcon, ShareIcon } from '@heroicons/react/outline';
+import { ShareIcon, TrashIcon } from '@heroicons/react/outline';
 import { Tooltip } from '@reach/tooltip';
-
 import { pipe } from 'fp-ts/function';
 import * as TH from 'fp-ts/These';
+import type { ActionFunction, LoaderFunction, MetaFunction } from 'remix';
+import { Form, Link, useTransitions } from 'remix';
 
+import { decodeLoaderData, useLoaderData } from '../../hooks/useRouteData';
 import { SharedLists, sharedListsDecoder } from '../../lib/dto';
 import { getListsLoader, listsActions } from '../../middlewares';
-import { decodeLoaderData, useLoaderData } from '../../hooks/useRouteData';
 
 export const meta: MetaFunction = ({ data }) => {
   return {

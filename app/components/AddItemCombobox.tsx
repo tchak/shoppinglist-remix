@@ -1,13 +1,15 @@
-import { useState, FormEvent, useEffect } from 'react';
+import { PlusIcon } from '@heroicons/react/solid';
 import {
   Combobox,
   ComboboxInput,
-  ComboboxPopover,
   ComboboxList,
   ComboboxOption,
+  ComboboxPopover,
 } from '@reach/combobox';
+import { FormEvent, useEffect, useState } from 'react';
 import { useDebounce } from 'use-debounce';
-import { PlusIcon } from '@heroicons/react/solid';
+
+const cache = new Map<string, string[]>();
 
 export function AddItemCombobox({
   onSelect,
@@ -90,7 +92,6 @@ function useItemSuggestions(term: string): string[] {
   return items;
 }
 
-const cache = new Map<string, string[]>();
 async function fetchItemSuggestions(
   term: string,
   signal: AbortSignal

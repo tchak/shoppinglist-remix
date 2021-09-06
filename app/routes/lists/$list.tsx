@@ -1,28 +1,26 @@
-import type { LoaderFunction, ActionFunction, MetaFunction } from 'remix';
-import { useState, useMemo } from 'react';
-import { useSubmit, useTransition, useTransitions } from 'remix';
-
-import type { Option } from 'fp-ts/Option';
-import { pipe } from 'fp-ts/function';
-import * as TH from 'fp-ts/These';
-import * as A from 'fp-ts/ReadonlyArray';
 import * as E from 'fp-ts/Either';
+import { pipe } from 'fp-ts/function';
+import type { Option } from 'fp-ts/Option';
 import * as O from 'fp-ts/Option';
+import * as A from 'fp-ts/ReadonlyArray';
+import * as TH from 'fp-ts/These';
 import * as D from 'io-ts/Decoder';
 import * as ITD from 'io-ts-types-experimental/Decoder';
-
-import { Item, ListWithItems, listWithItemsDecoder } from '../../lib/dto';
-import { getListLoader, listActions } from '../../middlewares';
-import { decodeLoaderData, useLoaderData } from '../../hooks/useRouteData';
-import { useRevalidateOnWindowFocus } from '../../hooks/useRevalidate';
+import { useMemo, useState } from 'react';
+import type { ActionFunction, LoaderFunction, MetaFunction } from 'remix';
+import { useSubmit, useTransition, useTransitions } from 'remix';
 
 import {
-  ListTitle,
-  AddItemCombobox,
   ActiveItemsList,
+  AddItemCombobox,
   CheckedOffItemsList,
   ItemDetailDialog,
+  ListTitle,
 } from '../../components';
+import { useRevalidateOnWindowFocus } from '../../hooks/useRevalidate';
+import { decodeLoaderData, useLoaderData } from '../../hooks/useRouteData';
+import { Item, ListWithItems, listWithItemsDecoder } from '../../lib/dto';
+import { getListLoader, listActions } from '../../middlewares';
 
 export const meta: MetaFunction = ({ data }) => {
   return {

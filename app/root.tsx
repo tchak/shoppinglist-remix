@@ -1,31 +1,28 @@
-import type { ReactNode } from 'react';
-import type { LinksFunction, LoaderFunction, MetaFunction } from 'remix';
-import {
-  Meta,
-  Links,
-  Scripts,
-  LiveReload,
-  useMatches,
-  useTransition,
-  useLoaderData,
-} from 'remix';
-import { withProfiler } from '@sentry/react';
-import { IntlProvider } from 'react-intl';
-import { Outlet } from 'react-router-dom';
 import { XCircleIcon } from '@heroicons/react/solid';
-
+import { withProfiler } from '@sentry/react';
 import { pipe } from 'fp-ts/function';
 import { Status } from 'hyper-ts';
 import * as M from 'hyper-ts/lib/Middleware';
-
-import stylesUrl from './styles/index.css';
-
-import { decodeLocale, toHandler } from './lib/sessions';
-import { getIntlMessages, DEFAULT_LOCALE } from './lib/intl';
-import { useScrollRestoration } from './hooks/useScrollRestoration';
-import { JSONError } from './lib/hyper';
+import type { ReactNode } from 'react';
+import { IntlProvider } from 'react-intl';
+import { Outlet } from 'react-router-dom';
+import type { LinksFunction, LoaderFunction, MetaFunction } from 'remix';
+import {
+  Links,
+  LiveReload,
+  Meta,
+  Scripts,
+  useLoaderData,
+  useMatches,
+  useTransition,
+} from 'remix';
 
 import { ApplicationOutlet, Progress } from './components';
+import { useScrollRestoration } from './hooks/useScrollRestoration';
+import { JSONError } from './lib/hyper';
+import { DEFAULT_LOCALE, getIntlMessages } from './lib/intl';
+import { decodeLocale, toHandler } from './lib/sessions';
+import stylesUrl from './styles/index.css';
 
 type LoaderData = {
   ENV: Record<string, string>;

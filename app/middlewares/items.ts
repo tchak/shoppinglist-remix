@@ -1,21 +1,21 @@
 import { pipe } from 'fp-ts/function';
-import * as TE from 'fp-ts/TaskEither';
 import * as T from 'fp-ts/Task';
+import * as TE from 'fp-ts/TaskEither';
 import * as TH from 'fp-ts/These';
 import * as M from 'hyper-ts/lib/Middleware';
 import * as D from 'io-ts/Decoder';
 import * as ITD from 'io-ts-types-experimental/Decoder';
 
-import { getUser, toHandler, UnauthorizedError } from '../lib/sessions';
 import { NotFoundError, prisma } from '../lib/db';
 import {
-  POST,
-  PUT,
   DELETE,
-  redirect,
   json,
   MethodNotAllowed,
+  POST,
+  PUT,
+  redirect,
 } from '../lib/hyper';
+import { getUser, toHandler, UnauthorizedError } from '../lib/sessions';
 import { autocompleteAddTerm, autocompleteSearchTerm } from './autocomplete';
 
 const termQuery = pipe(

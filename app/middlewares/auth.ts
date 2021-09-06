@@ -2,22 +2,22 @@ import { constant, pipe } from 'fp-ts/function';
 import * as TE from 'fp-ts/TaskEither';
 import * as TH from 'fp-ts/These';
 import * as M from 'hyper-ts/lib/Middleware';
-import * as D from 'io-ts/Decoder';
 import * as DE from 'io-ts/DecodeError';
+import * as D from 'io-ts/Decoder';
 import * as FS from 'io-ts/FreeSemigroup';
 import * as ITD from 'io-ts-types-experimental/Decoder';
 
-import { prisma } from '../lib/db';
 import { hash, verify } from '../lib/argon2.server';
-import { getUser, toHandler } from '../lib/sessions';
+import { prisma } from '../lib/db';
 import {
+  clearSession,
+  json,
+  MethodNotAllowed,
   POST,
   redirect,
-  json,
-  clearSession,
   session,
-  MethodNotAllowed,
 } from '../lib/hyper';
+import { getUser, toHandler } from '../lib/sessions';
 
 export interface ValidPasswordBrand {
   readonly ValidPasswordBrand: unique symbol;

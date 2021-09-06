@@ -1,7 +1,7 @@
+import { polyfill } from 'interweave-ssr';
+import { renderToString } from 'react-dom/server';
 import type { EntryContext } from 'remix';
 import { RemixServer } from 'remix';
-import { renderToString } from 'react-dom/server';
-import { polyfill } from 'interweave-ssr';
 
 polyfill();
 

@@ -1,10 +1,8 @@
-import { useState, ReactNode } from 'react';
-import { useSubmit, useTransition, Form } from 'remix';
 import {
-  TrashIcon,
   CheckIcon,
-  PlusIcon,
   PencilIcon,
+  PlusIcon,
+  TrashIcon,
   XIcon,
 } from '@heroicons/react/outline';
 import {
@@ -12,15 +10,17 @@ import {
   DisclosureButton,
   DisclosurePanel,
 } from '@reach/disclosure';
-import { animated, useSpring } from 'react-spring';
-import { useDrag } from 'react-use-gesture';
-import { FormattedMessage } from 'react-intl';
 import { Tooltip } from '@reach/tooltip';
+import * as E from 'fp-ts/Either';
+import { pipe } from 'fp-ts/function';
 import Interweave from 'interweave';
 import { UrlMatcher } from 'interweave-autolink';
-import { pipe } from 'fp-ts/function';
-import * as E from 'fp-ts/Either';
 import * as ITD from 'io-ts-types-experimental/Decoder';
+import { ReactNode, useState } from 'react';
+import { FormattedMessage } from 'react-intl';
+import { animated, useSpring } from 'react-spring';
+import { useDrag } from 'react-use-gesture';
+import { Form, useSubmit, useTransition } from 'remix';
 
 import type { Item } from '../lib/dto';
 

@@ -1,11 +1,11 @@
+import { pipe } from 'fp-ts/function';
+import * as M from 'hyper-ts/lib/Middleware';
+import { FormattedMessage } from 'react-intl';
 import type { LoaderFunction, MetaFunction } from 'remix';
 import { Link } from 'remix';
-import { FormattedMessage } from 'react-intl';
-import * as M from 'hyper-ts/lib/Middleware';
-import { pipe } from 'fp-ts/function';
 
+import { json, redirect } from '../lib/hyper';
 import { getUser, toHandler } from '../lib/sessions';
-import { redirect, json } from '../lib/hyper';
 
 export const meta: MetaFunction = () => {
   return { title: 'Shoppinglist' };

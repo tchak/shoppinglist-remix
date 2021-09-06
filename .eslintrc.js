@@ -1,13 +1,25 @@
 module.exports = {
   root: true,
   parser: '@typescript-eslint/parser',
-  plugins: ['@typescript-eslint', 'formatjs'],
+  plugins: ['@typescript-eslint', 'formatjs', 'simple-import-sort'],
   extends: [
     'plugin:@typescript-eslint/recommended',
     'plugin:prettier/recommended',
     'plugin:react-hooks/recommended',
   ],
   rules: {
+    'sort-imports': 'off',
+    // 'import/order': 'off',
+    // 'import/no-extraneous-dependencies': 'error',
+    // 'import/no-unassigned-import': 'error',
+    // 'import/no-duplicates': 'error',
+    '@typescript-eslint/no-use-before-define': ['error', { functions: false }],
+    // '@typescript-eslint/explicit-function-return-type': [
+    //   'error',
+    //   { allowExpressions: true },
+    // ],
+    'simple-import-sort/imports': 'error',
+    'simple-import-sort/exports': 'error',
     'react-hooks/rules-of-hooks': 'error',
     'react-hooks/exhaustive-deps': 'warn',
     'formatjs/enforce-default-message': ['error', 'literal'],

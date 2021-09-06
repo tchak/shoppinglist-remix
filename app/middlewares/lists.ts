@@ -5,18 +5,17 @@ import * as M from 'hyper-ts/lib/Middleware';
 import * as D from 'io-ts/Decoder';
 import * as ITD from 'io-ts-types-experimental/Decoder';
 
-import type { ListWithItems, SharedLists } from '../lib/dto';
-import { getUser, toHandler, UnauthorizedError } from '../lib/sessions';
 import { NotFoundError, prisma, PrismaError } from '../lib/db';
+import type { ListWithItems, SharedLists } from '../lib/dto';
 import {
-  POST,
-  PUT,
   DELETE,
-  redirect,
   json,
   MethodNotAllowed,
+  POST,
+  PUT,
+  redirect,
 } from '../lib/hyper';
-
+import { getUser, toHandler, UnauthorizedError } from '../lib/sessions';
 import { createItem } from './items';
 
 const createListBody = D.struct({ title: ITD.NonEmptyString });

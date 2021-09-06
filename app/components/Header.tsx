@@ -1,7 +1,7 @@
-import { Form, useTransition } from 'remix';
-import { NavLink, useMatch } from 'react-router-dom';
 import { ClipboardCheckIcon } from '@heroicons/react/outline';
 import { FormattedMessage } from 'react-intl';
+import { NavLink, useMatch } from 'react-router-dom';
+import { Form, useTransition } from 'remix';
 
 import { ClientOnly, ShareButton } from '.';
 

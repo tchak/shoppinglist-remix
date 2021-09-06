@@ -1,18 +1,18 @@
+import { LockClosedIcon, XCircleIcon } from '@heroicons/react/solid';
+import { constNull, constUndefined, pipe } from 'fp-ts/function';
+import * as O from 'fp-ts/Option';
+import * as TH from 'fp-ts/These';
 import type {
-  RouteHandle,
+  ActionFunction,
   LoaderFunction,
   MetaFunction,
-  ActionFunction,
+  RouteHandle,
 } from 'remix';
-import { Link, Form, useTransition } from 'remix';
-import { LockClosedIcon, XCircleIcon } from '@heroicons/react/solid';
-import { pipe, constNull, constUndefined } from 'fp-ts/function';
-import * as TH from 'fp-ts/These';
-import * as O from 'fp-ts/Option';
+import { Form, Link, useTransition } from 'remix';
 
-import { signInDecoder } from '../lib/dto';
-import { signInLoader, signInAction } from '../middlewares';
 import { useActionData } from '../hooks/useRouteData';
+import { signInDecoder } from '../lib/dto';
+import { signInAction, signInLoader } from '../middlewares';
 
 export const handle: RouteHandle = { layout: false };
 export const meta: MetaFunction = () => ({ title: 'Sign In' });

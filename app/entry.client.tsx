@@ -1,7 +1,7 @@
-import ReactDOM from 'react-dom';
-import { RemixBrowser } from 'remix';
 import * as Sentry from '@sentry/react';
 import { Integrations } from '@sentry/tracing';
+import ReactDOM from 'react-dom';
+import { RemixBrowser } from 'remix';
 
 interface CustomBrowserWindow extends Window {
   ENV: Record<string, string>;

@@ -1,21 +1,6 @@
 import { useNProgress } from '@tanem/react-nprogress';
 import type { FunctionComponent } from 'react';
 
-export const Progress: FunctionComponent<{ isAnimating: boolean }> = ({
-  isAnimating,
-}) => {
-  const { animationDuration, isFinished, progress } = useNProgress({
-    isAnimating,
-  });
-
-  return (
-    <Container animationDuration={animationDuration} isFinished={isFinished}>
-      <Bar animationDuration={animationDuration} progress={progress} />
-      <Spinner />
-    </Container>
-  );
-};
-
 const Container: FunctionComponent<{
   animationDuration: number;
   isFinished: boolean;
@@ -86,5 +71,20 @@ const Bar: FunctionComponent<{ animationDuration: number; progress: number }> =
       />
     </div>
   );
+
+export const Progress: FunctionComponent<{ isAnimating: boolean }> = ({
+  isAnimating,
+}) => {
+  const { animationDuration, isFinished, progress } = useNProgress({
+    isAnimating,
+  });
+
+  return (
+    <Container animationDuration={animationDuration} isFinished={isFinished}>
+      <Bar animationDuration={animationDuration} progress={progress} />
+      <Spinner />
+    </Container>
+  );
+};
 
 export default Progress;

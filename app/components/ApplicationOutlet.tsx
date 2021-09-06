@@ -1,6 +1,6 @@
 import { Outlet } from 'react-router-dom';
 
-import { Header, Footer } from '.';
+import { Footer, Header } from '.';
 
 export function ApplicationOutlet() {
   return (

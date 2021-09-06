@@ -1,12 +1,11 @@
-import { createCookieSessionStorage } from 'remix';
-import { DateTime } from 'luxon';
-import resolveAcceptLanguage from 'resolve-accept-language';
-
-import { pipe } from 'fp-ts/function';
 import * as E from 'fp-ts/Either';
+import { pipe } from 'fp-ts/function';
 import * as RTE from 'fp-ts/ReaderTaskEither';
 import * as M from 'hyper-ts/lib/Middleware';
 import * as D from 'io-ts/Decoder';
+import { DateTime } from 'luxon';
+import { createCookieSessionStorage } from 'remix';
+import resolveAcceptLanguage from 'resolve-accept-language';
 
 import { prisma } from './db';
 import { decodeSession, toHandlerWithSession } from './hyper';

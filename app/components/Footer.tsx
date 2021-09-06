@@ -1,7 +1,7 @@
-import { Link, useMatch } from 'react-router-dom';
-import { LogoutIcon, StarIcon, HeartIcon } from '@heroicons/react/outline';
-import { FormattedMessage, useIntl } from 'react-intl';
+import { HeartIcon, LogoutIcon, StarIcon } from '@heroicons/react/outline';
 import { Tooltip } from '@reach/tooltip';
+import { FormattedMessage, useIntl } from 'react-intl';
+import { Link, useMatch } from 'react-router-dom';
 
 export function Footer() {
   const intl = useIntl();

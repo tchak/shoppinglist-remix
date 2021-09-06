@@ -1,6 +1,6 @@
+import { useTransition } from '@remix-run/react';
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
-import { useTransition } from '@remix-run/react';
 
 let firstRender = true;
 

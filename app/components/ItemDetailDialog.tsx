@@ -1,4 +1,4 @@
-import { DialogOverlay, DialogContent } from '@reach/dialog';
+import { DialogContent, DialogOverlay } from '@reach/dialog';
 import { useEffect, useRef } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { Form, useTransition } from 'remix';

@@ -2,7 +2,6 @@ import {
   PrismaClient as PrismaClientClass,
   PrismaPromise,
 } from '@prisma/client';
-
 import * as TE from 'fp-ts/TaskEither';
 
 type PrismaClient = PrismaClientClass<{ rejectOnNotFound: true }, never, true>;

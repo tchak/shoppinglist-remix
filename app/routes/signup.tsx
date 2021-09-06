@@ -1,18 +1,18 @@
-import type {
-  RouteHandle,
-  LoaderFunction,
-  ActionFunction,
-  MetaFunction,
-} from 'remix';
-import { Link, Form, useTransition } from 'remix';
 import { UserIcon, XCircleIcon } from '@heroicons/react/solid';
-import { pipe, constNull, constUndefined } from 'fp-ts/function';
-import * as TH from 'fp-ts/These';
+import { constNull, constUndefined, pipe } from 'fp-ts/function';
 import * as O from 'fp-ts/Option';
+import * as TH from 'fp-ts/These';
+import type {
+  ActionFunction,
+  LoaderFunction,
+  MetaFunction,
+  RouteHandle,
+} from 'remix';
+import { Form, Link, useTransition } from 'remix';
 
-import { signUpDecoder } from '../lib/dto';
-import { signUpLoader, signUpAction } from '../middlewares';
 import { useActionData } from '../hooks/useRouteData';
+import { signUpDecoder } from '../lib/dto';
+import { signUpAction, signUpLoader } from '../middlewares';
 
 export const handle: RouteHandle = { layout: false };
 export const meta: MetaFunction = () => ({ title: 'Sign Up' });

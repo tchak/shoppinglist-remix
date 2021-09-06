@@ -1,11 +1,11 @@
-import { useCallback, useState } from 'react';
 import { PencilIcon } from '@heroicons/react/outline';
-import { isHotkey } from 'is-hotkey';
-import { FormattedMessage } from 'react-intl';
-import { useSubmit, useTransition } from 'remix';
+import * as E from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
 import * as D from 'io-ts/Decoder';
-import * as E from 'fp-ts/Either';
+import { isHotkey } from 'is-hotkey';
+import { useCallback, useState } from 'react';
+import { FormattedMessage } from 'react-intl';
+import { useSubmit, useTransition } from 'remix';
 
 const isEnterKey = isHotkey('enter');
 const isEscKey = isHotkey('esc');
