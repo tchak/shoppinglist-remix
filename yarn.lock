@@ -2678,6 +2678,14 @@ invariant@^2.2.4:
   dependencies:
     loose-envify "^1.0.0"
 
+io-ts-types-experimental@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/io-ts-types-experimental/-/io-ts-types-experimental-0.1.0.tgz#587760b4a40bf273d8ce464b1af756860feb276d"
+  integrity sha512-jjarHej9+ralz4/Nr9WuGguFxqv7TJpDmzNqMbeStcgIqtYemIYCZJGQ6NAwUxylu4M/5QLoJYYtWVPGapIDsg==
+  dependencies:
+    fp-ts "^2.11.1"
+    io-ts "^2.2.16"
+
 io-ts@^2.2.16:
   version "2.2.16"
   resolved "https://registry.yarnpkg.com/io-ts/-/io-ts-2.2.16.tgz#597dffa03db1913fc318c9c6df6931cb4ed808b2"

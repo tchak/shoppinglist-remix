@@ -20,8 +20,8 @@ import Interweave from 'interweave';
 import { UrlMatcher } from 'interweave-autolink';
 import { pipe } from 'fp-ts/function';
 import * as E from 'fp-ts/Either';
+import * as ITD from 'io-ts-types-experimental/Decoder';
 
-import * as ITD from '../lib/Decoder';
 import type { Item } from '../lib/dto';
 
 interface ListItemProps {

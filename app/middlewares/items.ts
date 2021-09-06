@@ -4,6 +4,7 @@ import * as T from 'fp-ts/Task';
 import * as TH from 'fp-ts/These';
 import * as M from 'hyper-ts/lib/Middleware';
 import * as D from 'io-ts/Decoder';
+import * as ITD from 'io-ts-types-experimental/Decoder';
 
 import { getUser, toHandler, UnauthorizedError } from '../lib/sessions';
 import { NotFoundError, prisma } from '../lib/db';
@@ -16,7 +17,6 @@ import {
   MethodNotAllowed,
 } from '../lib/hyper';
 import { autocompleteAddTerm, autocompleteSearchTerm } from './autocomplete';
-import * as ITD from '../lib/Decoder';
 
 const termQuery = pipe(
   D.struct({ term: D.string }),

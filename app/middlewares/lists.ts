@@ -3,6 +3,7 @@ import * as TE from 'fp-ts/TaskEither';
 import * as TH from 'fp-ts/These';
 import * as M from 'hyper-ts/lib/Middleware';
 import * as D from 'io-ts/Decoder';
+import * as ITD from 'io-ts-types-experimental/Decoder';
 
 import type { ListWithItems, SharedLists } from '../lib/dto';
 import { getUser, toHandler, UnauthorizedError } from '../lib/sessions';
@@ -15,7 +16,6 @@ import {
   json,
   MethodNotAllowed,
 } from '../lib/hyper';
-import * as ITD from '../lib/Decoder';
 
 import { createItem } from './items';
 

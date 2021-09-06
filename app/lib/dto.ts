@@ -1,7 +1,6 @@
 import { pipe } from 'fp-ts/function';
 import * as D from 'io-ts/Decoder';
-
-import * as ITD from './Decoder';
+import * as ITD from 'io-ts-types-experimental/Decoder';
 
 const item = pipe(
   D.struct({

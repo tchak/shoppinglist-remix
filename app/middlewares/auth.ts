@@ -5,6 +5,7 @@ import * as M from 'hyper-ts/lib/Middleware';
 import * as D from 'io-ts/Decoder';
 import * as DE from 'io-ts/DecodeError';
 import * as FS from 'io-ts/FreeSemigroup';
+import * as ITD from 'io-ts-types-experimental/Decoder';
 
 import { prisma } from '../lib/db';
 import { hash, verify } from '../lib/argon2.server';
@@ -17,7 +18,6 @@ import {
   session,
   MethodNotAllowed,
 } from '../lib/hyper';
-import * as ITD from '../lib/Decoder';
 
 export interface ValidPasswordBrand {
   readonly ValidPasswordBrand: unique symbol;

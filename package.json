@@ -51,6 +51,7 @@
     "interweave-autolink": "^4.4.2",
     "interweave-ssr": "^1.2.1",
     "io-ts": "^2.2.16",
+    "io-ts-types-experimental": "^0.1.0",
     "is-hotkey": "^0.2.0",
     "lru-cache": "^6.0.0",
     "luxon": "^2.0.2",

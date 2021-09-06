@@ -9,10 +9,10 @@ import * as A from 'fp-ts/ReadonlyArray';
 import * as E from 'fp-ts/Either';
 import * as O from 'fp-ts/Option';
 import * as D from 'io-ts/Decoder';
+import * as ITD from 'io-ts-types-experimental/Decoder';
 
 import { Item, ListWithItems, listWithItemsDecoder } from '../../lib/dto';
 import { getListLoader, listActions } from '../../middlewares';
-import * as ITD from '../../lib/Decoder';
 import { decodeLoaderData, useLoaderData } from '../../hooks/useRouteData';
 import { useRevalidateOnWindowFocus } from '../../hooks/useRevalidate';
 
