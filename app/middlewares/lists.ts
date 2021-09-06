@@ -1,20 +1,13 @@
 import { pipe } from 'fp-ts/function';
 import * as TE from 'fp-ts/TaskEither';
 import * as TH from 'fp-ts/These';
-import * as M from 'hyper-ts/lib/Middleware';
+import * as H from 'hyper-ts-remix';
+import * as M from 'hyper-ts-remix/Middleware';
 import * as D from 'io-ts/Decoder';
 import * as ITD from 'io-ts-types-experimental/Decoder';
 
 import { NotFoundError, prisma, PrismaError } from '../lib/db';
 import type { ListWithItems, SharedLists } from '../lib/dto';
-import {
-  DELETE,
-  json,
-  MethodNotAllowed,
-  POST,
-  PUT,
-  redirect,
-} from '../lib/hyper';
 import { getUser, toHandler, UnauthorizedError } from '../lib/sessions';
 import { createItem } from './items';
 
@@ -24,7 +17,7 @@ const listId = ITD.UUID;
 
 const createList = (user: { id: string }) =>
   pipe(
-    POST,
+    M.POST,
     M.chainW(() => M.decodeBody(createListBody.decode)),
     M.chainTaskEitherKW((body) =>
       prisma((p) =>
@@ -42,7 +35,7 @@ const createList = (user: { id: string }) =>
 
 const updateList = (user: { id: string }) =>
   pipe(
-    PUT,
+    M.PUT,
     M.bindW('id', () => M.decodeParam('list', listId.decode)),
     M.bindW('body', () => M.decodeBody(updateListBody.decode)),
     M.chainTaskEitherKW(({ id, body }) =>
@@ -61,7 +54,7 @@ const updateList = (user: { id: string }) =>
 
 const deleteList = (user: { id: string }) =>
   pipe(
-    DELETE,
+    M.DELETE,
     M.chainW(() => M.decodeParam('list', listId.decode)),
     M.chainTaskEitherKW((id) =>
       prisma((p) => [
@@ -135,8 +128,8 @@ function assignListToUser(
 export const getListsLoader = pipe(
   getUser,
   M.chainTaskEitherKW(getLists),
-  M.ichainW((lists) => json(lists)),
-  M.orElse(() => redirect('/')),
+  M.ichainW((lists) => M.sendJson(lists)),
+  M.orElse(() => M.sendRedirect('/')),
   toHandler
 );
 
@@ -145,12 +138,12 @@ export const getListLoader = pipe(
   M.bindTo('user'),
   M.bindW('id', () => M.decodeParam('list', listId.decode)),
   M.chainTaskEitherKW(({ id, user }) => getList(id, user)),
-  M.ichainW((list) => json(list)),
+  M.ichainW((list) => M.sendJson(list)),
   M.orElse((error) => {
     if (error == UnauthorizedError) {
-      return redirect('/signin');
+      return M.sendRedirect('/signin');
     }
-    return redirect('/lists');
+    return M.sendRedirect('/lists');
   }),
   toHandler
 );
@@ -158,14 +151,14 @@ export const getListLoader = pipe(
 export const listsActions = pipe(
   getUser,
   M.chainW(createList),
-  M.ichain((path) => redirect(path)),
+  M.ichain((path) => M.sendRedirect(path)),
   M.orElse((error) => {
     if (error == UnauthorizedError) {
-      return redirect('/signin');
-    } else if (error == MethodNotAllowed || error == NotFoundError) {
-      return redirect('/');
+      return M.sendRedirect('/signin');
+    } else if (error == H.MethodNotAllowed || error == NotFoundError) {
+      return M.sendRedirect('/');
     }
-    return json(TH.left('input error'));
+    return M.sendJson(TH.left('input error'));
   }),
   toHandler
 );
@@ -179,14 +172,14 @@ export const listActions = pipe(
       M.alt(() => deleteList(user))
     )
   ),
-  M.ichain((path) => redirect(path)),
+  M.ichain((path) => M.sendRedirect(path)),
   M.orElse((error) => {
     if (error == UnauthorizedError) {
-      return redirect('/signin');
-    } else if (error == MethodNotAllowed || error == NotFoundError) {
-      return redirect('/');
+      return M.sendRedirect('/signin');
+    } else if (error == H.MethodNotAllowed || error == NotFoundError) {
+      return M.sendRedirect('/');
     }
-    return json(TH.left('input error'));
+    return M.sendJson(TH.left('input error'));
   }),
   toHandler
 );

@@ -1,10 +1,9 @@
 import { pipe } from 'fp-ts/function';
-import * as M from 'hyper-ts/lib/Middleware';
+import * as M from 'hyper-ts-remix/Middleware';
 import { FormattedMessage } from 'react-intl';
 import type { LoaderFunction, MetaFunction } from 'remix';
 import { Link } from 'remix';
 
-import { json, redirect } from '../lib/hyper';
 import { getUser, toHandler } from '../lib/sessions';
 
 export const meta: MetaFunction = () => {
@@ -14,8 +13,8 @@ export const meta: MetaFunction = () => {
 export const loader: LoaderFunction = (r) =>
   pipe(
     getUser,
-    M.ichain(() => redirect('/lists')),
-    M.orElse(() => json(null)),
+    M.ichain(() => M.sendRedirect('/lists')),
+    M.orElse(() => M.sendJson(null)),
     toHandler
   )(r);
 

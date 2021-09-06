@@ -502,6 +502,21 @@
     signal-exit "^3.0.3"
     ws "^7.4.5"
 
+"@remix-run/dev@^0.17.0":
+  version "0.17.5"
+  resolved "https://npm.remix.run/download/@remix-run/dev/0.17.5/1aae747e19458de4c7c89fe528ee3211e4c687fab851b31aa98f66dd757a488e#8235947ec8fea670723994280bc3f05bee4e77ac"
+  integrity sha512-CrBFvYTgdbU8ETdSkKdLkmVyO6gl6IJ2uMbr/GDUKbJ2FXdtizNPMdZA79raSl/xj/csPg+lH2BaAmNuIUhB4g==
+  dependencies:
+    cacache "^15.0.5"
+    chokidar "^3.5.1"
+    esbuild "0.11.16"
+    lodash.debounce "^4.0.8"
+    meow "^7.1.1"
+    pretty-ms "^7.0.1"
+    read-package-json-fast "^2.0.2"
+    signal-exit "^3.0.3"
+    ws "^7.4.5"
+
 "@remix-run/express@0.18.0-pre.0":
   version "0.18.0-pre.0"
   resolved "https://npm.remix.run/download/@remix-run/express/0.18.0-pre.0/35cdc47d549e0fd00afd9875ecb5aad28845f1892dd9af8d6adba2f53d2e16da#c8cd32e6d85e8885a33e8915f26fb8944cfbdcad"
@@ -523,10 +538,32 @@
     node-fetch "^2.6.1"
     react-router-dom "^6.0.0-beta.0"
 
+"@remix-run/node@^0.17.0":
+  version "0.17.5"
+  resolved "https://npm.remix.run/download/@remix-run/node/0.17.5/aa46f22b848493a2d62bac3ae6f4b1c372512a3100a381205d1b5ee15ebcc708#5b0d78164e6b82cb40c11608c91ef707e7c15cb0"
+  integrity sha512-9psZEQjtjHdU0t2wz+m5fd+BFUB8SveQe5DPmnXhRg3w3+q3bdJL+zFNmD/4d5pCtCD1AXSJthsJuPKR2p+G8w==
+  dependencies:
+    "@types/cookie" "^0.4.0"
+    "@types/node-fetch" "^2.5.7"
+    cookie "^0.4.1"
+    cookie-signature "^1.1.0"
+    history "^5.0.0"
+    jsesc "^3.0.1"
+    node-fetch "^2.6.1"
+    react-router-dom "^6.0.0-beta.0"
+
 "@remix-run/react@=0.18.0-pre.0":
   version "0.18.0-pre.0"
   resolved "https://npm.remix.run/download/@remix-run/react/0.18.0-pre.0/410cd22e66f8872218300dea916327cb383567a21bdfa6aa7a76cb52d5854de7#cc49aa05fb0a9d6753f79eb13c48382f2ab19192"
   integrity sha512-PwGLRkv9FL/WQVZ0HduvdhxxvaR6Vaa18gOobgWO4YzgP8eoJYzEwvu3nBGTIo17BraatnwcQTDj0A69oUlj5w==
+  dependencies:
+    history "^5.0.0"
+    react-router-dom "^6.0.0-beta.0"
+
+"@remix-run/react@^0.17.0":
+  version "0.17.5"
+  resolved "https://npm.remix.run/download/@remix-run/react/0.17.5/02ccb3944097e1b35052f2d0acc0010a9e8c8758b20fa87fee9a8898018ccc51#d23ac53ad82a78ac534c2fe22d0fa741e050b43a"
+  integrity sha512-o4aAHSt+FDVkyUl9I2UOnh4vboUgDaRrvwQ+py5BcrylYIAz6CVkQPH2Nhmqi6GEcO+k001V6XiwbZvnw9tTHA==
   dependencies:
     history "^5.0.0"
     react-router-dom "^6.0.0-beta.0"
@@ -2543,6 +2580,19 @@ https-proxy-agent@^5.0.0:
     agent-base "6"
     debug "4"
 
+hyper-ts-remix@=0.17.0:
+  version "0.17.0"
+  resolved "https://registry.yarnpkg.com/hyper-ts-remix/-/hyper-ts-remix-0.17.0.tgz#977ec47e6b93ccdbad28c9237d321d81bdccb18a"
+  integrity sha512-m/SAl8O9G/3xCwEgQEO1LgAH16K4bK4pNL/kdNbYWdYAdLJl5Pm7bUwYqFR611dMz6LvkAFWJyizvhEu/PD4Cg==
+  dependencies:
+    "@remix-run/dev" "^0.17.0"
+    "@remix-run/node" "^0.17.0"
+    "@remix-run/react" "^0.17.0"
+    fp-ts "^2.11.1"
+    fp-ts-contrib "^0.1.26"
+    hyper-ts "^0.7.1"
+    remix "^0.17.0"
+
 hyper-ts@^0.7.1:
   version "0.7.1"
   resolved "https://registry.yarnpkg.com/hyper-ts/-/hyper-ts-0.7.1.tgz#0907c1db2dde58b5623a9af4d4ef6ba2ebe8085f"
@@ -4197,6 +4247,13 @@ remix@=0.18.0-pre.0:
   version "0.18.0-pre.0"
   resolved "https://registry.yarnpkg.com/remix/-/remix-0.18.0-pre.0.tgz#e6aea807d8d70807cd82ab516ff5d24d83a3f734"
   integrity sha512-nwRJwfa8WxslGdLGO9GP4H1iE+zs1+ft7JUFYc45BU5loni5YNYPJLxbQGUrqNmi4gaE0DDYxvAgf39spRxzog==
+  dependencies:
+    fs-extra "^10.0.0"
+
+remix@^0.17.0:
+  version "0.17.5"
+  resolved "https://registry.yarnpkg.com/remix/-/remix-0.17.5.tgz#c0d50539aea64cba12b9418d03446c2a58d0ba3b"
+  integrity sha512-S/h5gI6YRjb6iDWTjvAmyf9oQrUbVcCFEzxf6s5uD+L3YacateAtmcri6rPuDVs+aqacNH0iBy04z7qIK+o5VA==
   dependencies:
     fs-extra "^10.0.0"
 

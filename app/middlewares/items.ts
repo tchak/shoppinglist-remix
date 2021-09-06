@@ -2,19 +2,12 @@ import { pipe } from 'fp-ts/function';
 import * as T from 'fp-ts/Task';
 import * as TE from 'fp-ts/TaskEither';
 import * as TH from 'fp-ts/These';
-import * as M from 'hyper-ts/lib/Middleware';
+import * as H from 'hyper-ts-remix';
+import * as M from 'hyper-ts-remix/Middleware';
 import * as D from 'io-ts/Decoder';
 import * as ITD from 'io-ts-types-experimental/Decoder';
 
 import { NotFoundError, prisma } from '../lib/db';
-import {
-  DELETE,
-  json,
-  MethodNotAllowed,
-  POST,
-  PUT,
-  redirect,
-} from '../lib/hyper';
 import { getUser, toHandler, UnauthorizedError } from '../lib/sessions';
 import { autocompleteAddTerm, autocompleteSearchTerm } from './autocomplete';
 
@@ -53,7 +46,7 @@ const findList = (id: string, user: { id: string }) =>
 
 export const createItem = (user: { id: string }) =>
   pipe(
-    POST,
+    M.POST,
     M.bindW('id', () => M.decodeParam('list', listId.decode)),
     M.bindW('body', () => M.decodeBody(createItemBody.decode)),
     M.chainTaskEitherKW(({ id, body }) =>
@@ -82,7 +75,7 @@ export const createItem = (user: { id: string }) =>
 
 const updateItem = (user: { id: string }) =>
   pipe(
-    PUT,
+    M.PUT,
     M.bindW('id', () => M.decodeParam('item', itemId.decode)),
     M.bindW('body', () => M.decodeBody(updateItemBody.decode)),
     M.chainTaskEitherKW(({ id, body }) =>
@@ -105,7 +98,7 @@ const updateItem = (user: { id: string }) =>
 
 const deleteItem = (user: { id: string }) =>
   pipe(
-    DELETE,
+    M.DELETE,
     M.chainW(() => M.decodeParam('item', itemId.decode)),
     M.chainTaskEitherKW((id) =>
       pipe(
@@ -124,7 +117,7 @@ const deleteItem = (user: { id: string }) =>
 
 const clearItems = (user: { id: string }) =>
   pipe(
-    DELETE,
+    M.DELETE,
     M.chainW(() => M.decodeBody(listQuery.decode)),
     M.chainTaskEitherKW((id) =>
       pipe(
@@ -146,8 +139,8 @@ export const getItemsLoader = pipe(
   M.bindTo('user'),
   M.bindW('term', () => M.decodeQuery(termQuery.decode)),
   M.chainTaskK(({ term, user }) => autocompleteSearchTerm(term, user.id)),
-  M.ichainW((items) => json(items)),
-  M.orElse(() => json([])),
+  M.ichainW((items) => M.sendJson(items)),
+  M.orElse(() => M.sendJson([])),
   toHandler
 );
 
@@ -159,14 +152,14 @@ export const itemActions = pipe(
       M.alt(() => deleteItem(user))
     )
   ),
-  M.ichainW((item) => redirect(`/lists/${item.listId}`)),
+  M.ichainW((item) => M.sendRedirect(`/lists/${item.listId}`)),
   M.orElse((error) => {
     if (error == UnauthorizedError) {
-      return redirect('/signin');
-    } else if (error == MethodNotAllowed || error == NotFoundError) {
-      return redirect('/');
+      return M.sendRedirect('/signin');
+    } else if (error == H.MethodNotAllowed || error == NotFoundError) {
+      return M.sendRedirect('/');
     }
-    return json(TH.left('input error'));
+    return M.sendJson(TH.left('input error'));
   }),
   toHandler
 );
@@ -174,14 +167,14 @@ export const itemActions = pipe(
 export const itemsAction = pipe(
   getUser,
   M.chainW((user) => clearItems(user)),
-  M.ichainW((list) => redirect(`/lists/${list.id}`)),
+  M.ichainW((list) => M.sendRedirect(`/lists/${list.id}`)),
   M.orElse((error) => {
     if (error == UnauthorizedError) {
-      return redirect('/signin');
-    } else if (error == MethodNotAllowed || error == NotFoundError) {
-      return redirect('/');
+      return M.sendRedirect('/signin');
+    } else if (error == H.MethodNotAllowed || error == NotFoundError) {
+      return M.sendRedirect('/');
     }
-    return json(TH.left('input error'));
+    return M.sendJson(TH.left('input error'));
   }),
   toHandler
 );

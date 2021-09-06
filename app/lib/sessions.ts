@@ -1,14 +1,14 @@
 import * as E from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
 import * as RTE from 'fp-ts/ReaderTaskEither';
-import * as M from 'hyper-ts/lib/Middleware';
+import { toHandlerWithSession } from 'hyper-ts-remix';
+import * as M from 'hyper-ts-remix/Middleware';
 import * as D from 'io-ts/Decoder';
 import { DateTime } from 'luxon';
 import { createCookieSessionStorage } from 'remix';
 import resolveAcceptLanguage from 'resolve-accept-language';
 
 import { prisma } from './db';
-import { decodeSession, toHandlerWithSession } from './hyper';
 
 export const UnauthorizedError = 'UnauthorizedError' as const;
 export type UnauthorizedError = typeof UnauthorizedError;
@@ -36,7 +36,7 @@ export const toHandler = toHandlerWithSession(cookieSession);
 
 const getSessionLocale = (defaultLocale: string) =>
   pipe(
-    decodeSession('locale', D.string.decode),
+    M.decodeSession('locale', D.string.decode),
     M.orElse(() => M.of(defaultLocale))
   );
 
@@ -79,7 +79,7 @@ const findUser = pipe(
 );
 
 export const getUser = pipe(
-  decodeSession('user', D.string.decode),
+  M.decodeSession('user', D.string.decode),
   M.chainTaskEitherKW(findUser),
   M.mapLeft(() => UnauthorizedError)
 );
