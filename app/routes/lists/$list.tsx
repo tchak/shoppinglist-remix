@@ -5,7 +5,7 @@ import * as O from 'fp-ts/Option';
 import * as A from 'fp-ts/ReadonlyArray';
 import * as TH from 'fp-ts/These';
 import * as D from 'io-ts/Decoder';
-import * as ITD from 'io-ts-types-experimental/Decoder';
+import { BooleanFromString } from 'io-ts-types-experimental/Decoder';
 import { useMemo, useState } from 'react';
 import type { ActionFunction, LoaderFunction, MetaFunction } from 'remix';
 import { useSubmit, useTransition, useTransitions } from 'remix';
@@ -80,7 +80,7 @@ function useCheckedItem() {
     const transition = transitions.get(`${item.id}-toggle`);
     if (transition?.state == 'submitting') {
       return pipe(
-        ITD.BooleanFromString.decode(transition.formData.get('checked')),
+        BooleanFromString.decode(transition.formData.get('checked')),
         E.getOrElse(() => false)
       );
     }

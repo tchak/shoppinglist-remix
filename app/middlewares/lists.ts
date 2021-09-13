@@ -4,16 +4,21 @@ import * as TH from 'fp-ts/These';
 import * as H from 'hyper-ts-remix';
 import * as M from 'hyper-ts-remix/Middleware';
 import * as D from 'io-ts/Decoder';
-import * as ITD from 'io-ts-types-experimental/Decoder';
+import { NonEmptyString, UUID } from 'io-ts-types-experimental/Decoder';
 
 import { NotFoundError, prisma, PrismaError } from '../lib/db';
-import type { ListWithItems, SharedLists } from '../lib/dto';
+import type {
+  ListWithItems,
+  ListWithItemsResult,
+  SharedLists,
+  SharedListsResult,
+} from '../lib/dto';
 import { getUser, toHandler, UnauthorizedError } from '../lib/sessions';
 import { createItem } from './items';
 
-const createListBody = D.struct({ title: ITD.NonEmptyString });
-const updateListBody = D.struct({ title: ITD.NonEmptyString });
-const listId = ITD.UUID;
+const createListBody = D.struct({ title: NonEmptyString });
+const updateListBody = D.struct({ title: NonEmptyString });
+const listId = UUID;
 
 const createList = (user: { id: string }) =>
   pipe(
@@ -128,7 +133,7 @@ function assignListToUser(
 export const getListsLoader = pipe(
   getUser,
   M.chainTaskK(getLists),
-  M.ichainW((lists) => M.sendJson(lists)),
+  M.ichainW((lists: SharedListsResult) => M.sendJson(lists)),
   M.orElse(() => M.sendRedirect('/')),
   toHandler
 );
@@ -138,7 +143,7 @@ export const getListLoader = pipe(
   M.bindTo('user'),
   M.bindW('id', () => M.decodeParam('list', listId.decode)),
   M.chainTaskK(({ id, user }) => getList(id, user)),
-  M.ichainW((list) => M.sendJson(list)),
+  M.ichainW((list: ListWithItemsResult) => M.sendJson(list)),
   M.orElse((error) => {
     if (error == UnauthorizedError) {
       return M.sendRedirect('/signin');

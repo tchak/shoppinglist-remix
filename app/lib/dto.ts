@@ -1,6 +1,6 @@
 import { pipe } from 'fp-ts/function';
 import * as D from 'io-ts/Decoder';
-import * as ITD from 'io-ts-types-experimental/Decoder';
+import { these } from 'io-ts-types-experimental/Decoder';
 
 const item = pipe(
   D.struct({
@@ -43,13 +43,13 @@ export const listWithItems = pipe(
   D.readonly
 );
 
-export const sharedListsDecoder = ITD.these(D.string, sharedLists);
-export const listWithItemsDecoder = ITD.these(D.string, listWithItems);
-export const signInDecoder = ITD.these(
+export const sharedListsDecoder = these(D.string, sharedLists);
+export const listWithItemsDecoder = these(D.string, listWithItems);
+export const signInDecoder = these(
   D.string,
   D.struct({ email: D.string, password: D.string })
 );
-export const signUpDecoder = ITD.these(
+export const signUpDecoder = these(
   D.string,
   D.struct({ email: D.string, password: D.string })
 );
@@ -57,3 +57,5 @@ export const signUpDecoder = ITD.these(
 export type Item = D.TypeOf<typeof item>;
 export type ListWithItems = D.TypeOf<typeof listWithItems>;
 export type SharedLists = D.TypeOf<typeof sharedLists>;
+export type ListWithItemsResult = D.TypeOf<typeof listWithItemsDecoder>;
+export type SharedListsResult = D.TypeOf<typeof sharedListsDecoder>;

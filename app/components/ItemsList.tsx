@@ -15,7 +15,7 @@ import * as E from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
 import Interweave from 'interweave';
 import { UrlMatcher } from 'interweave-autolink';
-import * as ITD from 'io-ts-types-experimental/Decoder';
+import { BooleanFromString } from 'io-ts-types-experimental/Decoder';
 import { ReactNode, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { animated, useSpring } from 'react-spring';
@@ -115,7 +115,7 @@ function ListItem({ item, onOpen }: { item: Item } & ListItemProps) {
   const checked =
     toggle.state == 'submitting'
       ? pipe(
-          ITD.BooleanFromString.decode(toggle.formData.get('checked')),
+          BooleanFromString.decode(toggle.formData.get('checked')),
           E.getOrElse(() => false)
         )
       : item.checked;

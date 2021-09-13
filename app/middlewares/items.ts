@@ -5,7 +5,11 @@ import * as TH from 'fp-ts/These';
 import * as H from 'hyper-ts-remix';
 import * as M from 'hyper-ts-remix/Middleware';
 import * as D from 'io-ts/Decoder';
-import * as ITD from 'io-ts-types-experimental/Decoder';
+import {
+  BooleanFromString,
+  NonEmptyString,
+  UUID,
+} from 'io-ts-types-experimental/Decoder';
 
 import { NotFoundError, prisma } from '../lib/db';
 import { getUser, toHandler, UnauthorizedError } from '../lib/sessions';
@@ -16,17 +20,17 @@ const termQuery = pipe(
   D.map(({ term }) => term)
 );
 const listQuery = pipe(
-  D.struct({ list: ITD.UUID }),
+  D.struct({ list: UUID }),
   D.map(({ list }) => list)
 );
-const createItemBody = D.struct({ title: ITD.NonEmptyString });
+const createItemBody = D.struct({ title: NonEmptyString });
 const updateItemBody = D.partial({
-  title: ITD.NonEmptyString,
+  title: NonEmptyString,
   note: D.string,
-  checked: ITD.BooleanFromString,
+  checked: BooleanFromString,
 });
-const listId = ITD.UUID;
-const itemId = ITD.UUID;
+const listId = UUID;
+const itemId = UUID;
 
 const findItem = (id: string, user: { id: string }) =>
   prisma((p) =>

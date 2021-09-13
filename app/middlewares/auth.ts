@@ -6,7 +6,7 @@ import * as M from 'hyper-ts-remix/Middleware';
 import * as DE from 'io-ts/DecodeError';
 import * as D from 'io-ts/Decoder';
 import * as FS from 'io-ts/FreeSemigroup';
-import * as ITD from 'io-ts-types-experimental/Decoder';
+import { Email, NonEmptyString } from 'io-ts-types-experimental/Decoder';
 
 import { hash, verify } from '../lib/argon2.server';
 import { prisma } from '../lib/db';
@@ -21,11 +21,11 @@ const validPassword = (password: string): password is ValidPassword =>
   password.length >= 6;
 
 const password = pipe(
-  ITD.NonEmptyString,
+  NonEmptyString,
   D.refine(validPassword, 'should be at least 6 characters')
 );
-const signUpBody = D.struct({ email: ITD.Email, password });
-const signInBody = D.struct({ email: ITD.Email, password });
+const signUpBody = D.struct({ email: Email, password });
+const signInBody = D.struct({ email: Email, password });
 
 const WrongEmailError = 'WrongEmailError' as const;
 type WrongEmailError = typeof WrongEmailError;
