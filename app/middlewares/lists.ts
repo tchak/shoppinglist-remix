@@ -127,7 +127,7 @@ function assignListToUser(
 
 export const getListsLoader = pipe(
   getUser,
-  M.chainTaskEitherKW(getLists),
+  M.chainTaskK(getLists),
   M.ichainW((lists) => M.sendJson(lists)),
   M.orElse(() => M.sendRedirect('/')),
   toHandler
@@ -137,7 +137,7 @@ export const getListLoader = pipe(
   getUser,
   M.bindTo('user'),
   M.bindW('id', () => M.decodeParam('list', listId.decode)),
-  M.chainTaskEitherKW(({ id, user }) => getList(id, user)),
+  M.chainTaskK(({ id, user }) => getList(id, user)),
   M.ichainW((list) => M.sendJson(list)),
   M.orElse((error) => {
     if (error == UnauthorizedError) {
