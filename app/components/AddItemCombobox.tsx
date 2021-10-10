@@ -7,9 +7,8 @@ import {
   ComboboxPopover,
 } from '@reach/combobox';
 import { FormEvent, useEffect, useState } from 'react';
+import { useFetcher } from 'remix';
 import { useDebounce } from 'use-debounce';
-
-const cache = new Map<string, string[]>();
 
 export function AddItemCombobox({
   onSelect,
@@ -24,7 +23,6 @@ export function AddItemCombobox({
     if (term.length >= 2) {
       onSelect(titleize(term));
       setTerm('');
-      cache.clear();
     }
   };
 
@@ -78,37 +76,14 @@ export function AddItemCombobox({
 }
 
 function useItemSuggestions(term: string): string[] {
-  const [items, setItems] = useState<string[]>([]);
+  const fetcher = useFetcher<string[]>();
   const [debouncedTerm] = useDebounce(term, 200);
   useEffect(() => {
     if (debouncedTerm.trim() != '') {
-      const controller = new AbortController();
-      fetchItemSuggestions(debouncedTerm, controller.signal).then((items) =>
-        setItems(items)
-      );
-      return () => controller.abort();
+      fetcher.submit({ term: debouncedTerm }, { action: '/items' });
     }
-  }, [debouncedTerm]);
-  return items;
-}
-
-async function fetchItemSuggestions(
-  term: string,
-  signal: AbortSignal
-): Promise<string[]> {
-  let items = cache.get(term);
-
-  if (!items) {
-    const url = new URL('/items', location.toString());
-    url.searchParams.set('_data', 'routes/items/index');
-    url.searchParams.set('term', term);
-    items = await fetch(url.toString(), {
-      signal,
-    }).then<string[]>((response) => response.json());
-    cache.set(term, items);
-  }
-
-  return items;
+  }, [fetcher, debouncedTerm]);
+  return fetcher.data ?? [];
 }
 
 function titleize(input: string) {
