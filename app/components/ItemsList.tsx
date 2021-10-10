@@ -20,7 +20,7 @@ import { ReactNode, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { animated, useSpring } from 'react-spring';
 import { useDrag } from 'react-use-gesture';
-import { Form, useSubmit, useTransition } from 'remix';
+import { Form, useFetcher } from 'remix';
 
 import type { Item } from '../lib/dto';
 
@@ -77,19 +77,15 @@ export function CheckedOffItemsList({
 }
 
 function useItemSubmit(id: string) {
-  const toggleKey = `${id}-toggle`;
-  const removeKey = `${id}-remove`;
-  const toggleSubmit = useSubmit(toggleKey);
-  const removeSubmit = useSubmit(removeKey);
-  const toggleTransition = useTransition(toggleKey);
-  const removeTransition = useTransition(removeKey);
+  const toggle = useFetcher();
+  const remove = useFetcher();
   const onToggle = (checked: boolean) =>
-    toggleSubmit(
+    toggle.submit(
       { checked: checked ? 'true' : 'false' },
       { action: `/items/${id}`, method: 'put', replace: true }
     );
   const onRemove = () =>
-    removeSubmit(null, {
+    remove.submit(null, {
       action: `/items/${id}`,
       method: 'delete',
       replace: true,
@@ -98,10 +94,7 @@ function useItemSubmit(id: string) {
   return {
     onToggle,
     onRemove,
-    transitions: {
-      toggle: toggleTransition,
-      remove: removeTransition,
-    },
+    transitions: { toggle, remove },
   };
 }
 
@@ -113,9 +106,9 @@ function ListItem({ item, onOpen }: { item: Item } & ListItemProps) {
   } = useItemSubmit(item.id);
   const [swipe, setSwipe] = useState(0);
   const checked =
-    toggle.state == 'submitting'
+    toggle.type == 'actionSubmission' || toggle.type == 'actionReload'
       ? pipe(
-          BooleanFromString.decode(toggle.formData.get('checked')),
+          BooleanFromString.decode(toggle.submission.formData.get('checked')),
           E.getOrElse(() => false)
         )
       : item.checked;

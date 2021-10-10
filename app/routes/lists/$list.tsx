@@ -8,7 +8,7 @@ import * as D from 'io-ts/Decoder';
 import { BooleanFromString } from 'io-ts-types-experimental/Decoder';
 import { useMemo, useState } from 'react';
 import type { ActionFunction, LoaderFunction, MetaFunction } from 'remix';
-import { useSubmit, useTransition, useTransitions } from 'remix';
+import { useFetcher, useFetchers } from 'remix';
 
 import {
   ActiveItemsList,
@@ -53,9 +53,9 @@ export default function Lists$ListRouteComponent() {
 function ListWithItemsComponent({ list }: { list: ListWithItems }) {
   const [items, createItem] = useItems(list);
   const [item, openItem, closeItem] = useSelectedItem(items);
-  const isChecked = useCheckedItem();
-  const activeItems = items.filter((item) => !isChecked(item));
-  const checkedItems = items.filter((item) => isChecked(item));
+  //const isChecked = useCheckedItem();
+  const activeItems = items.filter((item) => !item.checked);
+  const checkedItems = items.filter((item) => item.checked);
 
   return (
     <div>
@@ -75,12 +75,18 @@ function ListWithItemsComponent({ list }: { list: ListWithItems }) {
 }
 
 function useCheckedItem() {
-  const transitions = useTransitions();
+  const fetchers = useFetchers();
   return (item: { id: string; checked: boolean }) => {
-    const transition = transitions.get(`${item.id}-toggle`);
-    if (transition?.state == 'submitting') {
+    const fetcher = fetchers.find(
+      (fetcher) =>
+        (fetcher.type == 'actionSubmission' ||
+          fetcher.type == 'actionReload') &&
+        fetcher.submission.action.endsWith(item.id) &&
+        fetcher.submission.formData.has('checked')
+    );
+    if (fetcher) {
       return pipe(
-        BooleanFromString.decode(transition.formData.get('checked')),
+        BooleanFromString.decode(fetcher.submission?.formData.get('checked')),
         E.getOrElse(() => false)
       );
     }
@@ -109,24 +115,24 @@ function useSelectedItem(
 function useItems(
   list: ListWithItems
 ): [ListWithItems['items'], (title: string) => void] {
-  const submit = useSubmit('item-create');
-  const transition = useTransition('item-create');
+  const fetcher = useFetcher();
 
   return [
-    transition.state == 'submitting'
+    fetcher.type == 'actionSubmission' || fetcher.type == 'actionReload'
       ? [
           {
             id: '-1',
             title: pipe(
-              D.string.decode(transition.formData.get('title')),
+              D.string.decode(fetcher.submission.formData.get('title')),
               E.getOrElse(() => '')
             ),
-            checked: true,
+            checked: false,
             note: '',
           },
           ...list.items,
         ]
       : list.items,
-    (title: string) => submit({ title }, { replace: true, method: 'post' }),
+    (title: string) =>
+      fetcher.submit({ title }, { method: 'post', replace: true }),
   ];
 }

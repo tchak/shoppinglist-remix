@@ -1,7 +1,7 @@
 import { ClipboardCheckIcon } from '@heroicons/react/outline';
 import { FormattedMessage } from 'react-intl';
 import { NavLink, useMatch } from 'react-router-dom';
-import { Form, useTransition } from 'remix';
+import { useFetcher } from 'remix';
 
 import { ClientOnly, ShareButton } from '.';
 
@@ -24,22 +24,22 @@ export function Header() {
 }
 
 function HeaderAction() {
-  const transition = useTransition();
+  const fetcher = useFetcher();
   const isLanding = useMatch('/');
   const isLists = useMatch('/lists');
 
   if (isLists) {
     return (
-      <Form method="post" action="/lists" replace>
+      <fetcher.Form method="post" action="/lists?index" replace>
         <input type="hidden" name="title" value="New Shoppinglist" />
         <button
           type="submit"
-          disabled={transition.state != 'idle'}
+          disabled={fetcher.state != 'idle'}
           className="relative inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-green-500"
         >
           <FormattedMessage defaultMessage="Create new list" id="TLszpS" />
         </button>
-      </Form>
+      </fetcher.Form>
     );
   } else if (!isLanding) {
     return (

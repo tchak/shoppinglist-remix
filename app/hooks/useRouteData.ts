@@ -49,9 +49,8 @@ export function useLoaderData<Data>(
 }
 
 export function useActionData<Data>(
-  decoder: D.Decoder<unknown, These<string, Data>>,
-  submissionKey?: string
+  decoder: D.Decoder<unknown, These<string, Data>>
 ): O.Option<These<string, Data>> {
-  const data = useRemixActionData<unknown>(submissionKey);
+  const data = useRemixActionData<unknown>();
   return decodeActionData(decoder, data);
 }

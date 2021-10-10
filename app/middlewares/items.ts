@@ -156,7 +156,7 @@ export const itemActions = pipe(
       M.alt(() => deleteItem(user))
     )
   ),
-  M.ichainW((item) => M.sendRedirect(`/lists/${item.listId}`)),
+  M.ichainW(() => M.sendJson(TH.right({ ok: true }))),
   M.orElse((error) => {
     if (error == UnauthorizedError) {
       return M.sendRedirect('/signin');
@@ -168,10 +168,10 @@ export const itemActions = pipe(
   toHandler
 );
 
-export const itemsAction = pipe(
+export const itemsActions = pipe(
   getUser,
   M.chainW((user) => clearItems(user)),
-  M.ichainW((list) => M.sendRedirect(`/lists/${list.id}`)),
+  M.ichainW(() => M.sendJson(TH.right({ ok: true }))),
   M.orElse((error) => {
     if (error == UnauthorizedError) {
       return M.sendRedirect('/signin');

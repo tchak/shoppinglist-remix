@@ -34,8 +34,7 @@ const createList = (user: { id: string }) =>
           },
         })
       )
-    ),
-    M.map(() => '/lists')
+    )
   );
 
 const updateList = (user: { id: string }) =>
@@ -156,7 +155,7 @@ export const getListLoader = pipe(
 export const listsActions = pipe(
   getUser,
   M.chainW(createList),
-  M.ichain((path) => M.sendRedirect(path)),
+  M.ichainW(() => M.sendJson(TH.right({ ok: true }))),
   M.orElse((error) => {
     if (error == UnauthorizedError) {
       return M.sendRedirect('/signin');
@@ -177,7 +176,7 @@ export const listActions = pipe(
       M.alt(() => deleteList(user))
     )
   ),
-  M.ichain((path) => M.sendRedirect(path)),
+  M.ichainW(() => M.sendJson(TH.right({ ok: true }))),
   M.orElse((error) => {
     if (error == UnauthorizedError) {
       return M.sendRedirect('/signin');

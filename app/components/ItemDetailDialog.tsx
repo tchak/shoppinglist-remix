@@ -1,7 +1,7 @@
 import { DialogContent, DialogOverlay } from '@reach/dialog';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { FormattedMessage } from 'react-intl';
-import { Form, useTransition } from 'remix';
+import { useFetcher } from 'remix';
 
 import type { Item } from '../lib/dto';
 
@@ -12,16 +12,13 @@ export function ItemDetailDialog({
   item: Item;
   onDismiss: () => void;
 }) {
-  const pendingFormRef = useRef(false);
-  const transition = useTransition(`${item.id}-note`);
+  const fetcher = useFetcher();
 
   useEffect(() => {
-    if (transition.state == 'submitting') {
-      pendingFormRef.current = true;
-    } else if (pendingFormRef.current) {
+    if (fetcher.type == 'done') {
       onDismiss();
     }
-  }, [transition.state, onDismiss]);
+  }, [fetcher.type, onDismiss]);
 
   return (
     <DialogOverlay
@@ -46,12 +43,7 @@ export function ItemDetailDialog({
           aria-modal="true"
           aria-labelledby="modal-headline"
         >
-          <Form
-            action={`/items/${item.id}`}
-            submissionKey={`${item.id}-note`}
-            method="put"
-            replace
-          >
+          <fetcher.Form action={`/items/${item.id}`} method="put" replace>
             <div>
               <div className="text-center">
                 <h3
@@ -70,7 +62,7 @@ export function ItemDetailDialog({
                     className="max-w-lg shadow-sm block w-full focus:ring-green-500 focus:border-green-500 sm:text-sm border-gray-300 rounded-md"
                     defaultValue={item.note ?? ''}
                     placeholder="Add more information about the item"
-                    disabled={transition.state == 'submitting'}
+                    disabled={fetcher.state == 'submitting'}
                   ></textarea>
                 </div>
               </div>
@@ -78,7 +70,7 @@ export function ItemDetailDialog({
             <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
               <button
                 type="submit"
-                disabled={transition.state == 'submitting'}
+                disabled={fetcher.state == 'submitting'}
                 className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:col-start-2 sm:text-sm"
               >
                 <FormattedMessage defaultMessage="OK" id="kAEQyV" />
@@ -87,12 +79,12 @@ export function ItemDetailDialog({
                 type="button"
                 className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:mt-0 sm:col-start-1 sm:text-sm"
                 onClick={onDismiss}
-                disabled={transition.state == 'submitting'}
+                disabled={fetcher.state == 'submitting'}
               >
                 <FormattedMessage defaultMessage="Cancel" id="47FYwb" />
               </button>
             </div>
-          </Form>
+          </fetcher.Form>
         </DialogContent>
       </div>
     </DialogOverlay>

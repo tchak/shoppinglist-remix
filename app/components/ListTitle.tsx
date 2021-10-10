@@ -5,21 +5,20 @@ import * as D from 'io-ts/Decoder';
 import { isHotkey } from 'is-hotkey';
 import { useCallback, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
-import { useSubmit, useTransition } from 'remix';
+import { useFetcher } from 'remix';
 
 const isEnterKey = isHotkey('enter');
 const isEscKey = isHotkey('esc');
 
 export function ListTitle({ list }: { list: { id: string; title: string } }) {
-  const submit = useSubmit(`${list.id}-title`);
-  const transition = useTransition(`${list.id}-title`);
+  const fetcher = useFetcher();
   const [isEditing, setIsEditing] = useState(false);
 
   const action = `/lists/${list.id}`;
   const title =
-    transition.state == 'submitting'
+    fetcher.type == 'actionSubmission' || fetcher.type == 'actionReload'
       ? pipe(
-          D.string.decode(transition.formData.get('title')),
+          D.string.decode(fetcher.submission.formData.get('title')),
           E.getOrElse(() => '')
         )
       : list.title;
@@ -27,21 +26,17 @@ export function ListTitle({ list }: { list: { id: string; title: string } }) {
   const onSubmit = useCallback(
     (value: string) => {
       if (title != value) {
-        submit(
+        fetcher.submit(
           { title: value },
-          {
-            action,
-            method: 'put',
-            replace: true,
-          }
+          { action, method: 'put', replace: true }
         );
       }
       setIsEditing(false);
     },
-    [submit, action, title]
+    [fetcher, action, title]
   );
 
-  if (isEditing && transition.state != 'submitting') {
+  if (isEditing && fetcher.state != 'submitting') {
     return (
       <div>
         <label htmlFor="list-title" className="sr-only">

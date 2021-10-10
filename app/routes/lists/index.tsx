@@ -3,7 +3,7 @@ import { Tooltip } from '@reach/tooltip';
 import { pipe } from 'fp-ts/function';
 import * as TH from 'fp-ts/These';
 import type { ActionFunction, LoaderFunction, MetaFunction } from 'remix';
-import { Form, Link, useTransitions } from 'remix';
+import { Link, useFetcher } from 'remix';
 
 import { decodeLoaderData, useLoaderData } from '../../hooks/useRouteData';
 import { SharedLists, sharedListsDecoder } from '../../lib/dto';
@@ -37,7 +37,7 @@ export default function ListsIndexRouteComponent() {
 }
 
 function SharedListsComponent({ lists }: { lists: SharedLists }) {
-  const transitions = useTransitions();
+  const fetcher = useFetcher();
 
   return (
     <ul className="divide-y divide-gray-200">
@@ -67,22 +67,19 @@ function SharedListsComponent({ lists }: { lists: SharedLists }) {
           </div>
           {!list.isShared && (
             <Tooltip label="Delete list">
-              <Form
+              <fetcher.Form
                 action={`/lists/${list.id}`}
-                submissionKey={`${list.id}-delete`}
                 method="delete"
                 replace
               >
                 <button
                   className="px-3 opacity-0 group-hover:opacity-100 transition duration-200 ease-in-out"
                   type="submit"
-                  disabled={
-                    transitions.get(`${list.id}-delete`)?.state == 'submitting'
-                  }
+                  disabled={fetcher.state == 'submitting'}
                 >
                   <TrashIcon className="hover:text-red-500 h-5 w-5" />
                 </button>
-              </Form>
+              </fetcher.Form>
             </Tooltip>
           )}
         </li>

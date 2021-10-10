@@ -20,8 +20,8 @@ export const loader: LoaderFunction = (r) => signInLoader(r);
 export const action: ActionFunction = (r) => signInAction(r);
 
 export default function SignInRouteComponent() {
-  const data = useActionData(signInDecoder, 'signin');
-  const transition = useTransition('signin');
+  const data = useActionData(signInDecoder);
+  const transition = useTransition();
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -40,12 +40,7 @@ export default function SignInRouteComponent() {
             </Link>
           </p>
         </div>
-        <Form
-          submissionKey="signin"
-          className="mt-8 space-y-6"
-          method="post"
-          replace
-        >
+        <Form className="mt-8 space-y-6" method="post" replace>
           <fieldset disabled={transition.state == 'submitting'}>
             <div className="rounded-md shadow-sm -space-y-px">
               <div>
