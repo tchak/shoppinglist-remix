@@ -7,8 +7,8 @@ datasource db {
 }
 
 generator client {
-  provider = "prisma-client-js"
-  previewFeatures = ["selectRelationCount"]
+  provider        = "prisma-client-js"
+  previewFeatures = ["referentialIntegrity"]
 }
 
 model User {
@@ -37,7 +37,7 @@ model List {
 
   users  UserList[]
   userId String     @map("user_id") @db.Uuid
-  user   User       @relation(fields: userId, references: id)
+  user   User       @relation(fields: userId, references: id, onDelete: Cascade)
 
   @@index([userId])
   @@map("lists")
@@ -54,7 +54,7 @@ model Item {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   listId String @map("list_id") @db.Uuid
-  list   List   @relation(fields: listId, references: id)
+  list   List   @relation(fields: listId, references: id, onDelete: Cascade)
 
   @@index([listId])
   @@map("items")
@@ -65,9 +65,9 @@ model UserList {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   userId String @map("user_id") @db.Uuid
-  user   User   @relation(fields: userId, references: id)
+  user   User   @relation(fields: userId, references: id, onDelete: Cascade)
   listId String @map("list_id") @db.Uuid
-  list   List   @relation(fields: listId, references: id)
+  list   List   @relation(fields: listId, references: id, onDelete: Cascade)
 
   @@id([userId, listId])
   @@map("user_lists")

@@ -61,11 +61,7 @@ const deleteList = (user: { id: string }) =>
     M.DELETE,
     M.chainW(() => M.decodeParam('list', listId.decode)),
     M.chainTaskEitherKW((id) =>
-      prisma((p) => [
-        p.userList.deleteMany({ where: { list: { id, user } } }),
-        p.item.deleteMany({ where: { list: { id, user } } }),
-        p.list.deleteMany({ where: { id, user } }),
-      ])
+      prisma((p) => p.list.deleteMany({ where: { id, user } }))
     ),
     M.map(() => '/lists')
   );
