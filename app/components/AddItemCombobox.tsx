@@ -77,7 +77,7 @@ export function AddItemCombobox({
 
 function useItemSuggestions(term: string): string[] {
   const fetcher = useFetcher<string[]>();
-  const [debouncedTerm] = useDebounce(term, 200);
+  const [debouncedTerm] = useDebounce(term, 400);
   useEffect(() => {
     if (debouncedTerm.trim() != '') {
       fetcher.submit({ term: debouncedTerm }, { action: '/items' });
