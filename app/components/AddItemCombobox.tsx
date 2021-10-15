@@ -82,7 +82,8 @@ function useItemSuggestions(term: string): string[] {
     if (debouncedTerm.trim() != '') {
       fetcher.submit({ term: debouncedTerm }, { action: '/items' });
     }
-  }, [fetcher, debouncedTerm]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedTerm]);
   return fetcher.data ?? [];
 }
 
