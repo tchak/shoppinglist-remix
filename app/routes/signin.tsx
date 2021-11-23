@@ -10,9 +10,9 @@ import type {
 } from 'remix';
 import { Form, Link, useTransition } from 'remix';
 
-import { useActionData } from '../hooks/useRouteData';
-import { signInDecoder } from '../lib/dto';
-import { signInAction, signInLoader } from '../middlewares';
+import { useActionData } from '~/hooks/useRouteData';
+import { signInDecoder } from '~/lib/dto';
+import { signInAction, signInLoader } from '~/middlewares';
 
 export const handle: RouteHandle = { layout: false };
 export const meta: MetaFunction = () => ({ title: 'Sign In' });

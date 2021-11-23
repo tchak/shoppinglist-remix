@@ -1,16 +1,15 @@
 import { constant, pipe } from 'fp-ts/function';
 import * as TE from 'fp-ts/TaskEither';
 import * as TH from 'fp-ts/These';
-import * as H from 'hyper-ts-remix';
-import * as M from 'hyper-ts-remix/Middleware';
 import * as DE from 'io-ts/DecodeError';
 import * as D from 'io-ts/Decoder';
 import * as FS from 'io-ts/FreeSemigroup';
 import { Email, NonEmptyString } from 'io-ts-types-experimental/Decoder';
 
-import { hash, verify } from '../lib/argon2.server';
-import { prisma } from '../lib/db';
-import { getUser, toHandler } from '../lib/sessions';
+import { hash, verify } from '~/lib/argon2.server';
+import { prisma } from '~/lib/db';
+import * as H from '~/lib/hyper';
+import { getUser, toHandler } from '~/lib/sessions';
 
 export interface ValidPasswordBrand {
   readonly ValidPasswordBrand: unique symbol;
@@ -34,32 +33,30 @@ type WrongPasswordError = typeof WrongPasswordError;
 
 export const signUpLoader = pipe(
   getUser,
-  M.ichainW(() => M.sendRedirect('/')),
-  M.orElse(() => M.sendJson(null)),
+  H.chainW(() => H.redirect('/')),
+  H.orElse(() => H.json(null)),
   toHandler
 );
 
 export const signUpAction = pipe(
   getUser,
-  M.ichain(() => M.sendRedirect('/')),
-  M.orElse(() =>
+  H.chain(() => H.redirect('/')),
+  H.orElse(() =>
     pipe(
-      M.POST,
-      M.chainW(() => M.decodeBody(signUpBody.decode)),
-      M.chainTaskEitherKW(createUserForAuthentication),
-      M.ichainW((user) =>
+      H.POST,
+      H.chainW(() => H.decodeBody(signUpBody.decode)),
+      H.chainTaskEitherKW(createUserForAuthentication),
+      H.chainW((user) =>
         pipe(
-          M.redirect('/lists'),
-          M.ichain(() => M.session('user', user.id)),
-          M.ichain(() => M.closeHeaders()),
-          M.ichain(() => M.end())
+          H.redirect('/lists'),
+          H.chain(() => H.session('user', user.id))
         )
       ),
-      M.orElse((error) => {
+      H.orElse((error) => {
         if (error == H.MethodNotAllowed) {
-          return M.sendRedirect('/');
+          return H.redirect('/');
         }
-        return M.sendJson(TH.left(drawError(error)));
+        return H.json(TH.left(drawError(error)));
       })
     )
   ),
@@ -68,32 +65,30 @@ export const signUpAction = pipe(
 
 export const signInLoader = pipe(
   getUser,
-  M.ichainW(() => M.sendRedirect('/')),
-  M.orElse(() => M.sendJson(null)),
+  H.chainW(() => H.redirect('/')),
+  H.orElse(() => H.json(null)),
   toHandler
 );
 
 export const signInAction = pipe(
   getUser,
-  M.ichain(() => M.sendRedirect('/')),
-  M.orElse(() =>
+  H.chain(() => H.redirect('/')),
+  H.orElse(() =>
     pipe(
-      M.POST,
-      M.chainW(() => M.decodeBody(signInBody.decode)),
-      M.chainTaskEitherKW(findUserForAuthentication),
-      M.ichainW((user) =>
+      H.POST,
+      H.chainW(() => H.decodeBody(signInBody.decode)),
+      H.chainTaskEitherKW(findUserForAuthentication),
+      H.chainW((user) =>
         pipe(
-          M.redirect('/lists'),
-          M.ichain(() => M.session('user', user.id)),
-          M.ichain(() => M.closeHeaders()),
-          M.ichain(() => M.end())
+          H.redirect('/lists'),
+          H.chain(() => H.session('user', user.id))
         )
       ),
-      M.orElse((error) => {
+      H.orElse((error) => {
         if (error == H.MethodNotAllowed) {
-          return M.sendRedirect('/');
+          return H.redirect('/');
         }
-        return M.sendJson(TH.left(drawError(error)));
+        return H.json(TH.left(drawError(error)));
       })
     )
   ),
@@ -101,10 +96,8 @@ export const signInAction = pipe(
 );
 
 export const signOutLoader = pipe(
-  M.redirect('/signin'),
-  M.ichain(() => M.clearSession('user')),
-  M.ichain(() => M.closeHeaders()),
-  M.ichain(() => M.end()),
+  H.redirect('/signin'),
+  H.chain(() => H.clearSession('user')),
   toHandler
 );
 

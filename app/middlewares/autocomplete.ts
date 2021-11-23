@@ -7,8 +7,8 @@ import * as TE from 'fp-ts/TaskEither';
 import Cache from 'lru-cache';
 import { matchSorter } from 'match-sorter';
 
-import list from '../data/food-list.json';
-import { prisma } from '../lib/db';
+import list from '~/data/food-list.json';
+import { prisma } from '~/lib/db';
 
 type Store = [Set<string>, string[]];
 const cache = new Cache<string, Store>({

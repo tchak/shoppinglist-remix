@@ -16,11 +16,11 @@ import {
   CheckedOffItemsList,
   ItemDetailDialog,
   ListTitle,
-} from '../../components';
-import { useRevalidateOnWindowFocus } from '../../hooks/useRevalidate';
-import { decodeLoaderData, useLoaderData } from '../../hooks/useRouteData';
-import { Item, ListWithItems, listWithItemsDecoder } from '../../lib/dto';
-import { getListLoader, listActions } from '../../middlewares';
+} from '~/components';
+import { useRevalidateOnWindowFocus } from '~/hooks/useRevalidate';
+import { decodeLoaderData, useLoaderData } from '~/hooks/useRouteData';
+import { Item, ListWithItems, listWithItemsDecoder } from '~/lib/dto';
+import { getListLoader, listActions } from '~/middlewares';
 
 export const meta: MetaFunction = ({ data }) => {
   return {

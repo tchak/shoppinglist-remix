@@ -1,7 +1,7 @@
 import { ClipboardCheckIcon } from '@heroicons/react/outline';
 import { FormattedMessage } from 'react-intl';
-import { NavLink, useMatch } from 'react-router-dom';
-import { useFetcher } from 'remix';
+import { useMatch } from 'react-router-dom';
+import { NavLink, useFetcher } from 'remix';
 
 import { ClientOnly, ShareButton } from '.';
 

@@ -1,7 +1,8 @@
 import { HeartIcon, LogoutIcon, StarIcon } from '@heroicons/react/outline';
 import { Tooltip } from '@reach/tooltip';
 import { FormattedMessage, useIntl } from 'react-intl';
-import { Link, useMatch } from 'react-router-dom';
+import { useMatch } from 'react-router-dom';
+import { Link } from 'remix';
 
 export function Footer() {
   const intl = useIntl();

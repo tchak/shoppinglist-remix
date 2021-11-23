@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useFetcher } from 'remix';
 
-import type { Item } from '../lib/dto';
+import type { Item } from '~/lib/dto';
 
 export function ItemDetailDialog({
   item,

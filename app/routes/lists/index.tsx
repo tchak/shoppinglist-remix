@@ -5,9 +5,9 @@ import * as TH from 'fp-ts/These';
 import type { ActionFunction, LoaderFunction, MetaFunction } from 'remix';
 import { Link, useFetcher } from 'remix';
 
-import { decodeLoaderData, useLoaderData } from '../../hooks/useRouteData';
-import { SharedLists, sharedListsDecoder } from '../../lib/dto';
-import { getListsLoader, listsActions } from '../../middlewares';
+import { decodeLoaderData, useLoaderData } from '~/hooks/useRouteData';
+import { SharedLists, sharedListsDecoder } from '~/lib/dto';
+import { getListsLoader, listsActions } from '~/middlewares';
 
 export const meta: MetaFunction = ({ data }) => {
   return {

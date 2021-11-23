@@ -1,19 +1,14 @@
 import { pipe } from 'fp-ts/function';
 import * as TE from 'fp-ts/TaskEither';
 import * as TH from 'fp-ts/These';
-import * as H from 'hyper-ts-remix';
-import * as M from 'hyper-ts-remix/Middleware';
 import * as D from 'io-ts/Decoder';
 import { NonEmptyString, UUID } from 'io-ts-types-experimental/Decoder';
 
-import { NotFoundError, prisma, PrismaError } from '../lib/db';
-import type {
-  ListWithItems,
-  ListWithItemsResult,
-  SharedLists,
-  SharedListsResult,
-} from '../lib/dto';
-import { getUser, toHandler, UnauthorizedError } from '../lib/sessions';
+import { NotFoundError, prisma, PrismaError } from '~/lib/db';
+import type { ListWithItems, SharedLists } from '~/lib/dto';
+import * as H from '~/lib/hyper';
+import { getUser, toHandler, UnauthorizedError } from '~/lib/sessions';
+
 import { createItem } from './items';
 
 const createListBody = D.struct({ title: NonEmptyString });
@@ -22,9 +17,9 @@ const listId = UUID;
 
 const createList = (user: { id: string }) =>
   pipe(
-    M.POST,
-    M.chainW(() => M.decodeBody(createListBody.decode)),
-    M.chainTaskEitherKW((body) =>
+    H.POST,
+    H.chainW(() => H.decodeBody(createListBody.decode)),
+    H.chainTaskEitherKW((body) =>
       prisma((p) =>
         p.list.create({
           data: {
@@ -39,10 +34,10 @@ const createList = (user: { id: string }) =>
 
 const updateList = (user: { id: string }) =>
   pipe(
-    M.PUT,
-    M.bindW('id', () => M.decodeParam('list', listId.decode)),
-    M.bindW('body', () => M.decodeBody(updateListBody.decode)),
-    M.chainTaskEitherKW(({ id, body }) =>
+    H.PUT,
+    H.bindW('id', () => H.decodeParam('list', listId.decode)),
+    H.bindW('body', () => H.decodeBody(updateListBody.decode)),
+    H.chainTaskEitherKW(({ id, body }) =>
       pipe(
         prisma((p) =>
           p.list.updateMany({
@@ -53,17 +48,17 @@ const updateList = (user: { id: string }) =>
         TE.map(() => id)
       )
     ),
-    M.map((id) => `/lists/${id}`)
+    H.map((id) => `/lists/${id}`)
   );
 
 const deleteList = (user: { id: string }) =>
   pipe(
-    M.DELETE,
-    M.chainW(() => M.decodeParam('list', listId.decode)),
-    M.chainTaskEitherKW((id) =>
+    H.DELETE,
+    H.chainW(() => H.decodeParam('list', listId.decode)),
+    H.chainTaskEitherKW((id) =>
       prisma((p) => p.list.deleteMany({ where: { id, user } }))
     ),
-    M.map(() => '/lists')
+    H.map(() => '/lists')
   );
 
 function getList(
@@ -127,59 +122,59 @@ function assignListToUser(
 
 export const getListsLoader = pipe(
   getUser,
-  M.chainTaskK(getLists),
-  M.ichainW((lists: SharedListsResult) => M.sendJson(lists)),
-  M.orElse(() => M.sendRedirect('/')),
+  H.chainTaskK((user) => getLists(user)),
+  H.chainW(H.json),
+  H.orElse(() => H.redirect('/')),
   toHandler
 );
 
 export const getListLoader = pipe(
   getUser,
-  M.bindTo('user'),
-  M.bindW('id', () => M.decodeParam('list', listId.decode)),
-  M.chainTaskK(({ id, user }) => getList(id, user)),
-  M.ichainW((list: ListWithItemsResult) => M.sendJson(list)),
-  M.orElse((error) => {
+  H.bindTo('user'),
+  H.bindW('id', () => H.decodeParam('list', listId.decode)),
+  H.chainTaskK(({ id, user }) => getList(id, user)),
+  H.chainW(H.json),
+  H.orElse((error) => {
     if (error == UnauthorizedError) {
-      return M.sendRedirect('/signin');
+      return H.redirect('/signin');
     }
-    return M.sendRedirect('/lists');
+    return H.redirect('/lists');
   }),
   toHandler
 );
 
 export const listsActions = pipe(
   getUser,
-  M.chainW(createList),
-  M.ichainW(() => M.sendJson(TH.right({ ok: true }))),
-  M.orElse((error) => {
+  H.chainW(createList),
+  H.chainW(() => H.json(TH.right({ ok: true }))),
+  H.orElse((error) => {
     if (error == UnauthorizedError) {
-      return M.sendRedirect('/signin');
+      return H.redirect('/signin');
     } else if (error == H.MethodNotAllowed || error == NotFoundError) {
-      return M.sendRedirect('/');
+      return H.redirect('/');
     }
-    return M.sendJson(TH.left('input error'));
+    return H.json(TH.left('input error'));
   }),
   toHandler
 );
 
 export const listActions = pipe(
   getUser,
-  M.chainW((user) =>
+  H.chainW((user) =>
     pipe(
       createItem(user),
-      M.alt(() => updateList(user)),
-      M.alt(() => deleteList(user))
+      H.alt(() => updateList(user)),
+      H.alt(() => deleteList(user))
     )
   ),
-  M.ichainW(() => M.sendJson(TH.right({ ok: true }))),
-  M.orElse((error) => {
+  H.chainW(() => H.json(TH.right({ ok: true }))),
+  H.orElse((error) => {
     if (error == UnauthorizedError) {
-      return M.sendRedirect('/signin');
+      return H.redirect('/signin');
     } else if (error == H.MethodNotAllowed || error == NotFoundError) {
-      return M.sendRedirect('/');
+      return H.redirect('/');
     }
-    return M.sendJson(TH.left('input error'));
+    return H.json(TH.left('input error'));
   }),
   toHandler
 );

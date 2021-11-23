@@ -1,4 +1,4 @@
-import { Outlet } from 'react-router-dom';
+import { Outlet } from 'remix';
 
 import { Footer, Header } from '.';
 

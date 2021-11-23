@@ -1,22 +1,23 @@
 import { XCircleIcon } from '@heroicons/react/solid';
 import { withProfiler } from '@sentry/react';
 import { pipe } from 'fp-ts/function';
-import { JSONError, Status } from 'hyper-ts-remix';
-import * as M from 'hyper-ts-remix/Middleware';
 import type { ReactNode } from 'react';
 import { IntlProvider } from 'react-intl';
-import { Outlet } from 'react-router-dom';
 import type { LinksFunction, LoaderFunction, MetaFunction } from 'remix';
 import {
   Links,
   LiveReload,
   Meta,
+  Outlet,
   Scripts,
+  ScrollRestoration,
   useCatch,
   useLoaderData,
   useMatches,
   useTransition,
 } from 'remix';
+
+import * as H from '~/lib/hyper';
 
 import { ApplicationOutlet, Progress } from './components';
 import { DEFAULT_LOCALE, getIntlMessages } from './lib/intl';
@@ -82,23 +83,19 @@ export const loader: LoaderFunction = (r) =>
       supportedLocales: ['en-GB', 'fr-FR'],
       defaultLocale: 'en-GB',
     }),
-    M.ichainW((locale) =>
+    H.chainW((locale) =>
       pipe(
-        M.status(Status.OK),
-        M.ichain(() => M.header('cache-control', 'max-age=600')),
-        M.ichain(() =>
-          M.json(
-            {
-              locale,
-              messages: getIntlMessages(locale),
-              ENV: {
-                APP_DOMAIN: process.env['APP_DOMAIN'],
-                COMMIT_ID: process.env['COMMIT_ID'],
-                SENTRY_DSN: process.env['SENTRY_DSN'],
-              },
+        H.header('cache-control', 'max-age=600'),
+        H.chain(() =>
+          H.json({
+            locale,
+            messages: getIntlMessages(locale),
+            ENV: {
+              APP_DOMAIN: process.env['APP_DOMAIN'],
+              COMMIT_ID: process.env['COMMIT_ID'],
+              SENTRY_DSN: process.env['SENTRY_DSN'],
             },
-            () => JSONError
-          )
+          })
         )
       )
     ),
@@ -130,6 +127,7 @@ function Document({
         <Progress isAnimating={pendingLocation} />
         {children}
 
+        <ScrollRestoration />
         <Scripts />
         {process.env.NODE_ENV == 'development' && <LiveReload />}
         <script

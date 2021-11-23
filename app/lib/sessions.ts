@@ -1,14 +1,12 @@
 import * as E from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
-import * as RTE from 'fp-ts/ReaderTaskEither';
-import { toHandlerWithSession } from 'hyper-ts-remix';
-import * as M from 'hyper-ts-remix/Middleware';
 import * as D from 'io-ts/Decoder';
 import { DateTime } from 'luxon';
 import { createCookieSessionStorage } from 'remix';
 import resolveAcceptLanguage from 'resolve-accept-language';
 
 import { prisma } from './db';
+import * as H from './hyper';
 
 export const UnauthorizedError = 'UnauthorizedError' as const;
 export type UnauthorizedError = typeof UnauthorizedError;
@@ -32,12 +30,12 @@ export const cookieSession = createCookieSessionStorage({
   },
 });
 
-export const toHandler = toHandlerWithSession(cookieSession);
+export const toHandler = H.toHandlerWithSession(cookieSession);
 
 const getSessionLocale = (defaultLocale: string) =>
   pipe(
-    M.decodeSession('locale', D.string.decode),
-    M.orElse(() => M.of(defaultLocale))
+    H.decodeSession('locale', D.string.decode),
+    H.orElse(() => H.of(defaultLocale))
   );
 
 type LocaleOptions = {
@@ -50,8 +48,8 @@ export const decodeLocale = ({
   defaultLocale,
 }: LocaleOptions) =>
   pipe(
-    M.decodeHeader('accept-language', D.string.decode),
-    M.chainEitherKW((acceptLanguageHeader) =>
+    H.decodeHeader('accept-language', D.string.decode),
+    H.chainEitherKW((acceptLanguageHeader) =>
       E.tryCatch(
         () =>
           resolveAcceptLanguage(
@@ -62,13 +60,13 @@ export const decodeLocale = ({
         () => AcceptLanguageParseError
       )
     ),
-    M.chainW(getSessionLocale),
-    M.orElse(() => M.of(defaultLocale))
+    H.chainW(getSessionLocale),
+    H.orElse(() => H.of(defaultLocale))
   );
 
 const findUser = pipe(
-  RTE.ask<string>(),
-  RTE.chainTaskEitherK((id) =>
+  H.ask<string>(),
+  H.chainTaskEitherK((id) =>
     prisma((p) =>
       p.user.findUnique({
         select: { id: true, email: true },
@@ -79,7 +77,7 @@ const findUser = pipe(
 );
 
 export const getUser = pipe(
-  M.decodeSession('user', D.string.decode),
-  M.chainTaskEitherKW(findUser),
-  M.mapLeft(() => UnauthorizedError)
+  H.decodeSession('user', D.string.decode),
+  H.chainTaskEitherKW(findUser),
+  H.mapLeft(() => UnauthorizedError)
 );

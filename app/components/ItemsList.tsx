@@ -13,8 +13,6 @@ import {
 import { Tooltip } from '@reach/tooltip';
 import * as E from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
-import Interweave from 'interweave';
-import { UrlMatcher } from 'interweave-autolink';
 import { BooleanFromString } from 'io-ts-types-experimental/Decoder';
 import { ReactNode, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
@@ -22,7 +20,7 @@ import { animated, useSpring } from 'react-spring';
 import { useDrag } from 'react-use-gesture';
 import { Form, useFetcher } from 'remix';
 
-import type { Item } from '../lib/dto';
+import type { Item } from '~/lib/dto';
 
 interface ListItemProps {
   onOpen: (id: string) => void;
@@ -164,13 +162,7 @@ function ListItem({ item, onOpen }: { item: Item } & ListItemProps) {
             >
               {item.title}
             </p>
-            <p className="text-sm text-gray-500">
-              <Interweave
-                content={item.note}
-                matchers={[new UrlMatcher('url', { customTLDs: ['dev'] })]}
-                newWindow={true}
-              />
-            </p>
+            <p className="text-sm text-gray-500">{item.note}</p>
           </div>
 
           {!checked ? (

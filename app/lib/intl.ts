@@ -1,4 +1,4 @@
-import messages_en_GB from '../lang/compiled/en-GB.json';
+import messages_en_GB from '~/lang/compiled/en-GB.json';
 
 export const DEFAULT_LOCALE = 'en-GB';
 
